@@ -41,7 +41,7 @@ async function run() {
   let currentObject = schema.components.schemas.AWSEvent;
   let pathArray = undefined;
   while (true) {
-    let fieldList = currentObject.required;
+    let fieldList = Object.keys(currentObject.properties);
 
     const field = await prompt({
       name: "id",
@@ -56,7 +56,6 @@ async function run() {
     }
     if (path) {
       pathArray.shift();
-      console.log(pathArray);
       let current = schema;
       for (var node of pathArray) {
         current = current[node];
@@ -77,17 +76,16 @@ async function run() {
     console.log(pathArray);
     if (pathArray && pathArray.length > 2) {
       let obj = {};
-      console.log("answer", answer);
-      obj[pathArray[pathArray.length-1]] = answer;
-      console.log(obj);
-      for (let i = pathArray.length-1; i > 2; i--) {
-        obj[pathArray[i]] = obj[pathArray[i + 1]];
-        console.log(obj);
-    }
+      obj[pathArray[pathArray.length - 1]] = {...(obj[pathArray[pathArray.length - 1]], {}), ...answer};
+
+      for (let i = pathArray.length - 1; i >= 2; i--) {
+        obj[pathArray[i]] = {...(obj[pathArray[i]] || {}), ...obj[pathArray[i + 1]]};
+      }
       answer = {};
-      answer["detail"] = obj;
+      answer["detail"] = {...(pattern["detail"] || {}), ...obj};
     }
-    pattern = Object.assign(pattern, answer);
+    pattern = { ...pattern, ...answer };
+    console.log("Generated pattern:");
     console.log(JSON.stringify(pattern, null, 2));
   }
 }
