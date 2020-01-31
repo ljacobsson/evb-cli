@@ -3,9 +3,20 @@ const schemas = new AWS.Schemas();
 const inputUtil = require("./input-util");
 const inquirer = require("inquirer");
 const prompt = inquirer.createPromptModule();
-const registryName = "discovered-schemas";
 run();
 async function run() {
+  const registriesResponse = await schemas.listRegistries().promise();
+  const registries = [
+    ...new Set(registriesResponse.Registries.map(p => p.RegistryName))
+  ];
+
+  const registry = await prompt({
+    name: "id",
+    type: "list",
+    message: "Select registry",
+    choices: registries
+  });
+  const registryName = registry.id;
   const result = await schemas
     .listSchemas({ RegistryName: registryName })
     .promise();
@@ -40,6 +51,7 @@ async function run() {
 
   let currentObject = schema.components.schemas.AWSEvent;
   let pathArray = undefined;
+  let objectArray = [];
   while (true) {
     let fieldList = Object.keys(currentObject.properties);
 
@@ -49,12 +61,11 @@ async function run() {
       message: `Add ${currentObject} item`,
       choices: fieldList
     });
+    objectArray.push(field.id);
     const chosenProp = currentObject.properties[field.id];
     const path = chosenProp.$ref;
     if (path) {
       pathArray = path && path.split("/");
-    }
-    if (path) {
       pathArray.shift();
       let current = schema;
       for (var node of pathArray) {
@@ -93,6 +104,7 @@ async function run() {
     pattern = mergeDeep(pattern, answer);
     console.log("Generated pattern:");
     console.log(JSON.stringify(pattern, null, 2));
+    pathArray = [];
   }
 }
 
