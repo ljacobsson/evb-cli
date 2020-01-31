@@ -84,18 +84,18 @@ async function run() {
         answer = await inputUtil.string(field.id);
     }
 
-    console.log(pathArray);
-    if (pathArray && pathArray.length > 2) {
+    console.log(objectArray);
+    if (objectArray && objectArray.length) {
       let obj = {};
-      obj[pathArray[pathArray.length - 1]] = {
-        ...(obj[pathArray[pathArray.length - 1]], {}),
+      obj[objectArray[objectArray.length - 1]] = {
+        ...(obj[objectArray[objectArray.length - 1]], {}),
         ...answer
       };
 
-      for (let i = pathArray.length - 1; i >= 2; i--) {
-        obj[pathArray[i]] = {
-          ...(obj[pathArray[i]] || {}),
-          ...obj[pathArray[i + 1]]
+      for (let i = objectArray.length - 1; i >= 2; i--) {
+        obj[objectArray[i]] = {
+          ...(obj[objectArray[i]] || {}),
+          ...obj[objectArray[i + 1]]
         };
       }
       answer = {};
