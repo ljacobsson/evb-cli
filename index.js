@@ -76,16 +76,49 @@ async function run() {
     console.log(pathArray);
     if (pathArray && pathArray.length > 2) {
       let obj = {};
-      obj[pathArray[pathArray.length - 1]] = {...(obj[pathArray[pathArray.length - 1]], {}), ...answer};
+      obj[pathArray[pathArray.length - 1]] = {
+        ...(obj[pathArray[pathArray.length - 1]], {}),
+        ...answer
+      };
 
       for (let i = pathArray.length - 1; i >= 2; i--) {
-        obj[pathArray[i]] = {...(obj[pathArray[i]] || {}), ...obj[pathArray[i + 1]]};
+        obj[pathArray[i]] = {
+          ...(obj[pathArray[i]] || {}),
+          ...obj[pathArray[i + 1]]
+        };
       }
       answer = {};
-      answer["detail"] = {...(pattern["detail"] || {}), ...obj};
+      answer["detail"] = { ...(pattern["detail"] || {}), ...obj };
     }
-    pattern = { ...pattern, ...answer };
+    pattern = mergeDeep(pattern, answer);
     console.log("Generated pattern:");
     console.log(JSON.stringify(pattern, null, 2));
   }
+}
+
+function isObject(item) {
+  return item && typeof item === "object" && !Array.isArray(item);
+}
+
+/**
+ * Deep merge two objects.
+ * @param target
+ * @param ...sources
+ */
+function mergeDeep(target, ...sources) {
+  if (!sources.length) return target;
+  const source = sources.shift();
+
+  if (isObject(target) && isObject(source)) {
+    for (const key in source) {
+      if (isObject(source[key])) {
+        if (!target[key]) Object.assign(target, { [key]: {} });
+        mergeDeep(target[key], source[key]);
+      } else {
+        Object.assign(target, { [key]: source[key] });
+      }
+    }
+  }
+
+  return mergeDeep(target, ...sources);
 }
