@@ -47,7 +47,6 @@ async function run() {
     .promise();
   const schema = JSON.parse(describeSchemaResponse.Content);
   let pattern = { source: [source.id], "detail-type": [detailType.id] };
-  console.log(JSON.stringify(pattern, null, 2));
 
   let currentObject = schema.components.schemas.AWSEvent;
   let pathArray = undefined;
@@ -83,28 +82,22 @@ async function run() {
       default:
         answer = await inputUtil.string(field.id);
     }
-
-    console.log(objectArray);
-    if (objectArray && objectArray.length) {
-      let obj = {};
-      obj[objectArray[objectArray.length - 1]] = {
-        ...(obj[objectArray[objectArray.length - 1]], {}),
-        ...answer
-      };
-
-      for (let i = objectArray.length - 1; i >= 2; i--) {
-        obj[objectArray[i]] = {
-          ...(obj[objectArray[i]] || {}),
-          ...obj[objectArray[i + 1]]
-        };
-      }
-      answer = {};
-      answer["detail"] = { ...(pattern["detail"] || {}), ...obj };
+    let x = {};
+    let current = answer;
+    for (let i = objectArray.length - 2; i >= 0; i--) {
+      const newObj = {};
+      newObj[objectArray[i]] = current;
+      x[objectArray[i]] = newObj;
+      current = x[objectArray[i]];
     }
-    pattern = mergeDeep(pattern, answer);
+
+    pattern = mergeDeep(pattern, current);
     console.log("Generated pattern:");
     console.log(JSON.stringify(pattern, null, 2));
     pathArray = [];
+    objectArray = [];
+    
+    currentObject = schema.components.schemas.AWSEvent;
   }
 }
 
