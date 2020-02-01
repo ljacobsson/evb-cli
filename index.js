@@ -23,17 +23,16 @@ async function run() {
   const sources = [
     ...new Set(result.Schemas.map(p => p.SchemaName.split("@")[0]))
   ];
-
   const source = await prompt({
     name: "id",
     type: "list",
     message: "Select source",
     choices: sources
   });
-  console.log(source.id);
   const detailTypes = result.Schemas.filter(p =>
     p.SchemaName.startsWith(`${source.id}@`)
   ).map(p => p.SchemaName.split("@")[1]);
+
   const detailType = await prompt({
     name: "id",
     type: "list",
@@ -100,6 +99,8 @@ async function run() {
     currentObject = schema.components.schemas.AWSEvent;
   }
 }
+
+
 
 function isObject(item) {
   return item && typeof item === "object" && !Array.isArray(item);
