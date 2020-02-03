@@ -9,7 +9,7 @@ const filterRules = [
   "null"
 ];
 
-const numericOperands = [
+const numericOperators = [
   ">",
   "<",
   "=",
@@ -46,13 +46,13 @@ async function getStringValue(fieldName, type) {
   }
   let returnObj = {};
   if (rule.id === "numeric") {
-    const operand = await prompt({
+    const operator = await prompt({
       name: "id",
       type: "list",
-      message: `Select operand`,
-      choices: numericOperands
+      message: `Select operator`,
+      choices: numericOperators
     });
-    val = [operand.id, val];
+    val = [operator.id, val];
     console.log(val);
   }
   let ruleObj = rule.id === "equals" ? val : undefined;
