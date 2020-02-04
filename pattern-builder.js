@@ -25,7 +25,7 @@ function isObject(item) {
   }
   
 
-  function getPatternSegment(answer, objectArray) {
+  function buildSegment(answer, objectArray) {
     let x = {};
     let current = answer;
     for (let i = objectArray.length - 2; i >= 0; i--) {
@@ -40,5 +40,5 @@ function isObject(item) {
 module.exports = {
     init,
     deepMerge,
-    getPatternSegment
+    buildSegment
 }
