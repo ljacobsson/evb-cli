@@ -1,18 +1,31 @@
 {
-  "name": "eb-cli",
-  "version": "1.0.0",
-  "description": "",
+  "name": "@mhlabs/eb-cli",
+  "version": "1.0.1",
+  "description": "A package for building EventBridge/CloudWatch Events patterns",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "patch-release": "npm version patch && npm publish && git push --follow-tags"
   },
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mhlabs/eb-cli.git"
+  },
+  "author": "mhdev",
   "license": "ISC",
   "dependencies": {
     "aws-sdk": "^2.610.0",
+    "commander": "^4.1.1",
     "inquirer": "^7.0.4"
   },
+  "bugs": {
+    "url": "https://github.com/mhlabs/eb-cli/issues"
+  },
+  "homepage": "https://github.com/mhlabs/eb-cli#readme",
   "devDependencies": {
     "jest": "^25.1.0"
+  },
+  "bin": {
+    "eb": "index.js"
   }
 }

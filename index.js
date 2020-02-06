@@ -1,83 +1,25 @@
-const AWS = require("aws-sdk");
-const schemas = new AWS.Schemas();
-const inputUtil = require("./input-util");
+#!/usr/bin/env node
 const patternBuilder = require("./pattern-builder");
+const codeBinding = require("./code-binding");
+const program = require("commander");
+program.version('0.0.1', '-v, --vers', 'output the current version');
+program
+.command("pattern")
+.alias("p")
+.description("Starts an EventBridge pattern builder")
+.action(async () => {
+  await patternBuilder.buildPattern();
+});
+// Commenting this out sinc ethere seems to be an SDK bug with getting code bindings 
+//
+// program
+// .command("code-bindings")
+// .alias("c")
+// .description("Get code bindinng for a schema")
+// .action(async () => {
+//   await codeBinding.browse();
+// });
 
-async function run() {
+program.parse(process.argv);
 
-  const registry = await inputUtil.getRegistry(schemas);
-  const schemaResponse = await schemas
-    .listSchemas({ RegistryName: registry.id })
-    .promise();
-
-  const sourceName = await inputUtil.getSourceName(schemaResponse);
-  const detailTypeName = await inputUtil.getDetailTypeName(
-    schemaResponse,
-    sourceName
-  );
-  const schemaName = `${sourceName}@${detailTypeName}`;
-
-  const describeSchemaResponse = await schemas
-    .describeSchema({ RegistryName: registry.id, SchemaName: schemaName })
-    .promise();
-
-  const schema = JSON.parse(describeSchemaResponse.Content);
-
-  let pattern = patternBuilder.init(sourceName, detailTypeName);
-
-  let currentObject = schema.components.schemas.AWSEvent;
-
-  let objectArray = [];
-  while (true) {
   
-    const { property, chosenProp } = await inputUtil.getProperty(
-      currentObject,
-      objectArray
-    );
-    if (property.id === inputUtil.BACK) {
-      reset();
-      continue;
-    }
-    if (property.id === inputUtil.DONE) {
-      outputPattern();
-      process.exit(0);
-    } 
-
-    const path = chosenProp.$ref;
-    if (path) {
-      // If property points at reference, go to reference in schema and continue
-      currentObject = findCurrent(path, schema);
-      continue;
-    }
-
-    let answer = await inputUtil.getPropertyValue(chosenProp, property);
-
-    let current = patternBuilder.buildSegment(answer, objectArray);
-
-    pattern = patternBuilder.deepMerge(pattern, current);
-    outputPattern();
-    reset();
-  }
-
-  function reset() {
-    objectArray = [];
-    currentObject = schema.components.schemas.AWSEvent;
-  }
-
-  function outputPattern() {
-    console.log("Generated pattern:");
-    console.log(JSON.stringify(pattern, null, 2));
-  }
-}
-
-function findCurrent(path, schema) {
-  const pathArray = path.split("/");
-  pathArray.shift(); // Remove leading #
-  let current = schema;
-  for (var node of pathArray) {
-    current = current[node];
-  }
-  return current;
-}
-
-run();
