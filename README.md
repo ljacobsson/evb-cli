@@ -1,10 +1,10 @@
-# eb-cli
+# evb-cli
 Pattern generator for CloudWatch Events / EventBridge
 
 ## Installation 
 Make sure you have your `AWS_REGION` environment variable set. Alternatively set `AWS_SDK_LOAD_CONFIG` to a thruthy value.
 
-`npm install -g @mhlabs/eb-cli`
+`npm install -g @mhlabs/evb-cli`
 
 ## Usage
 `eb pattern` - Will prompt you with a wizard that helps you build pattern for event matching. This is using EventBridge's schema registry (currently in preview) to let you navigate the schema you want to react on. 

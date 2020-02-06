@@ -2,7 +2,7 @@
 const patternBuilder = require("./pattern-builder");
 const codeBinding = require("./code-binding");
 const program = require("commander");
-program.version('0.0.1', '-v, --vers', 'output the current version');
+program.version('1.0.0', '-v, --vers', 'output the current version');
 program
 .command("pattern")
 .alias("p")
@@ -21,5 +21,3 @@ program
 // });
 
 program.parse(process.argv);
-
-  
