@@ -2,6 +2,8 @@
 Pattern generator for CloudWatch Events / EventBridge
 
 ## Installation 
+Make sure you have your `AWS_REGION` environment variable set. Alternatively set `AWS_SDK_LOAD_CONFIG` to a thruthy value.
+
 `npm install -g @mhlabs/eb-cli`
 
 ## Usage
