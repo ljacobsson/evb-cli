@@ -7,9 +7,9 @@ Make sure you have your `AWS_REGION` environment variable set. Alternatively set
 `npm install -g @mhlabs/evb-cli`
 
 ## Usage
-`eb pattern` - Will prompt you with a wizard that helps you build pattern for event matching. This is using EventBridge's schema registry (currently in preview) to let you navigate the schema you want to react on. 
+`evb pattern` - Will prompt you with a wizard that helps you build pattern for event matching. This is using EventBridge's schema registry (currently in preview) to let you navigate the schema you want to react on. 
 
-`eb pattern --format <yaml|json>` - Output format. Default is `json`
+`evb pattern --format <yaml|json>` - Output format. Default is `json`
 
 For AWS events, such as `aws.codepipeline` it's already enabled, but for custom events you will have to enable it in the AWS Management Console.
 
