@@ -1,6 +1,6 @@
 {
   "name": "@mhlabs/evb-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A package for building EventBridge/CloudWatch Events patterns",
   "main": "index.js",
   "scripts": {
@@ -15,7 +15,8 @@
   "dependencies": {
     "aws-sdk": "^2.610.0",
     "commander": "^4.1.1",
-    "inquirer": "^7.0.4"
+    "inquirer": "^7.0.4",
+    "json-to-pretty-yaml": "^1.2.2"
   },
   "bugs": {
     "url": "https://github.com/mhlabs/evb-cli/issues"

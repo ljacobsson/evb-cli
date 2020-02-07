@@ -1,6 +1,7 @@
 const AWS = require("aws-sdk");
 const schemas = new AWS.Schemas();
 const inputUtil = require("./input-util");
+const YAML = require("json-to-pretty-yaml");
 
 function init(source, detailType) {
     return { source: [source], "detail-type": [detailType] };
@@ -41,7 +42,7 @@ function isObject(item) {
     return current;
   }
 
-  async function buildPattern() {
+  async function buildPattern(format) {
     const registry = await inputUtil.getRegistry(schemas);
     const schemaResponse = await schemas
       .listSchemas({ RegistryName: registry.id })
@@ -75,7 +76,7 @@ function isObject(item) {
         continue;
       }
       if (property.id === inputUtil.DONE) {
-        outputPattern();
+        outputPattern(format);
         process.exit(0);
       }
   
@@ -91,7 +92,7 @@ function isObject(item) {
       let current = buildSegment(answer, objectArray);
   
       pattern = deepMerge(pattern, current);
-      outputPattern();
+      outputPattern(format);
       reset();
     }
   
@@ -100,9 +101,13 @@ function isObject(item) {
       currentObject = schema.components.schemas.AWSEvent;
     }
   
-    function outputPattern() {
+    function outputPattern(format) {
       console.log("Generated pattern:");
-      console.log(JSON.stringify(pattern, null, 2));
+      if (!format || format === "json") {
+        console.log(JSON.stringify(pattern, null, 2));
+      } else {
+        console.log(YAML.stringify(pattern, null, 2));
+      }
     }
   }
   

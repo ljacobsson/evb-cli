@@ -6,9 +6,10 @@ program.version('1.0.0', '-v, --vers', 'output the current version');
 program
 .command("pattern")
 .alias("p")
+.option('-f, --format <json|yaml>', 'Select output format', 'json')
 .description("Starts an EventBridge pattern builder")
-.action(async () => {
-  await patternBuilder.buildPattern();
+.action(async (cmd) => {
+  await patternBuilder.buildPattern(cmd.format);
 });
 // Commenting this out sinc ethere seems to be an SDK bug with getting code bindings 
 //

@@ -50,7 +50,6 @@ async function getStringValue(fieldName, type) {
       choices: numericOperators
     });
     val = [operator.id, val];
-    console.log(val);
   }
   let ruleObj = rule.id === "equals" ? val : undefined;
   if (!ruleObj) {
