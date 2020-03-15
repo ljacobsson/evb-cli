@@ -2,6 +2,7 @@ const AWS = require("aws-sdk");
 const schemas = new AWS.Schemas();
 const inputUtil = require("./input-util");
 const languages = ["Java8", "Python36", "TypeScript3"];
+const fs = require("fs");
 const inquirer = require("inquirer");
 const prompt = inquirer.createPromptModule();
 
@@ -25,8 +26,11 @@ async function browse(l) {
     choices: languages
   });
 
-  const source = await schemas.getCodeBindingSource({ Language: language.id, SchemaName:schemaName, RegistryName: registry.id, SchemaVersion:"1" }).promise();
-  console.log(source.Body.toString());
+  // const source = await schemas.putCodeBinding({Language: language.id, RegistryName: registry.id, SchemaName: schemaName}).promise();
+  // console.log(source.$response.data);
+  
+  const binding = await schemas.getCodeBindingSource({ Language: language.id, SchemaName:schemaName, RegistryName: registry.id}).promise();
+  fs.writeFileSync("binding.zip", binding.Body);
 }
 module.exports = {
   browse

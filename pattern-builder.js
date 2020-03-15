@@ -1,5 +1,3 @@
-const AWS = require("aws-sdk");
-const schemas = new AWS.Schemas();
 const inputUtil = require("./input-util");
 const YAML = require("json-to-pretty-yaml");
 
@@ -42,7 +40,7 @@ function isObject(item) {
     return current;
   }
 
-  async function buildPattern(format) {
+  async function buildPattern(format, schemas) {
     const registry = await inputUtil.getRegistry(schemas);
     const schemaResponse = await schemas
       .listSchemas({ RegistryName: registry.id })

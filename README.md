@@ -2,7 +2,7 @@
 Pattern generator for CloudWatch Events / EventBridge
 
 ## Installation 
-Make sure you have your `AWS_REGION` environment variable set. Alternatively set `AWS_SDK_LOAD_CONFIG` to a thruthy value.
+Unless using AWS Single Sign-On, make sure you have your `AWS_REGION` environment variable set. Alternatively set `AWS_SDK_LOAD_CONFIG` to a truthy value.
 
 `npm install -g @mhlabs/evb-cli`
 
@@ -14,3 +14,13 @@ Make sure you have your `AWS_REGION` environment variable set. Alternatively set
 For AWS events, such as `aws.codepipeline` it's already enabled, but for custom events you will have to enable it in the AWS Management Console.
 
 ![Demo](demo.gif)
+
+## AWS SSO authentication
+
+To set up [AWS Single Sign-On](https://aws.amazon.com/single-sign-on/) auth you'll need to configure your parameters:
+
+```
+evb configure-sso --account-id 123456789012 --start-url https://<your-sso-url>.awsapps.com/start --region <your-region> --role <your-sso-role>
+```
+
+The role used should be allowed to perform `schemas:ListSchemas` and `schemas:DescribeSchemas`
