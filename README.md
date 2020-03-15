@@ -17,7 +17,7 @@ For AWS events, such as `aws.codepipeline` it's already enabled, but for custom 
 
 ## AWS SSO authentication
 
-To set up [AWS Single Sign-On](https://aws.amazon.com/single-sign-on/) auth you'll need to configure your parameters:
+To set up [AWS Single Sign-On](https://aws.amazon.com/single-sign-on/) auth you'll need to configure the following parameters:
 
 ```
 evb configure-sso --account-id 123456789012 --start-url https://<your-sso-url>.awsapps.com/start --region <your-region> --role <your-sso-role>
