@@ -52,7 +52,7 @@ program
   .option("-a, --account-id <accountId>", "Account ID")
   .option("-u, --start-url <startUrl>", "AWS SSO start URL")
   .option("--region <region>", "AWS region")
-  .option("--role <role>", "AWS region")
+  .option("--role <role>", "Role to get credentials for")
   .description("Configure authentication with AWS Single Sign-On")
   .action(async cmd => {
     await storage.init({
