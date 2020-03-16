@@ -7,7 +7,7 @@ const ssoAuth = require("@mhlabs/aws-sso-client-auth");
 const storage = require("node-persist");
 const os = require("os");
 
-program.version("1.0.0", "-v, --vers", "output the current version");
+program.version("1.0.5", "-v, --vers", "output the current version");
 program
   .command("pattern")
   .alias("p")
