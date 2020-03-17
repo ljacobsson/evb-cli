@@ -66,5 +66,6 @@ program
 
 program.parse(process.argv);
 
-!program.commands.map(cmd => cmd._name).includes(program.args[0]) &&
+if (process.argv.length < 3) {
   program.help();
+}
