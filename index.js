@@ -37,17 +37,13 @@ program
     const schemaApi = new AWS.Schemas();
     await patternBuilder.buildPattern(cmd.format, schemaApi);
   });
-// Commenting this out since there seems to be an SDK bug with getting code bindings
-//
-// program
-// .command("code-bindings")
-// .alias("c")
-// .description("Get code binding for a schema")
-// .action(async () => {
-//   await codeBinding.browse();
-// });
-
 program
+  .on("command:*", () => {
+    const command = program.args[0];
+
+    console.error(`Unknown command '${command}'`);
+    process.exit(1);
+  })
   .command("configure-sso")
   .option("-a, --account-id <accountId>", "Account ID")
   .option("-u, --start-url <startUrl>", "AWS SSO start URL")
@@ -69,3 +65,6 @@ program
   });
 
 program.parse(process.argv);
+
+!program.commands.map(cmd => cmd._name).includes(program.args[0]) &&
+  program.help();
