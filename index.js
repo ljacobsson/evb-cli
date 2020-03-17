@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 const patternBuilder = require("./pattern-builder");
-const codeBinding = require("./code-binding");
 const AWS = require("aws-sdk");
 const program = require("commander");
 const ssoAuth = require("@mhlabs/aws-sso-client-auth");
 const storage = require("node-persist");
 const os = require("os");
+
+const EVB_CACHE_DIR = `${os.homedir()}/.evb-cli`;
 
 program.version("1.0.5", "-v, --vers", "output the current version");
 program
@@ -19,7 +20,7 @@ program
   .description("Starts an EventBridge pattern builder")
   .action(async cmd => {
     await storage.init({
-      dir: `${os.homedir()}/.evb-cli`
+      dir: EVB_CACHE_DIR
     });
     const ssoConfig = await storage.getItem("evb-cli-sso");
     if (ssoConfig) {
@@ -52,7 +53,7 @@ program
   .description("Configure authentication with AWS Single Sign-On")
   .action(async cmd => {
     await storage.init({
-      dir: `${os.homedir()}/.evb-cli`,
+      dir: EVB_CACHE_DIR,
       expiredInterval: 0
     });
 
