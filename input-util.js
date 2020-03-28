@@ -15,6 +15,16 @@ const filterRules = [
 
 const numericOperators = [">", "<", "=", ">=", "<=", "!="];
 
+async function text(message, def) {
+  const response = await prompt({
+      name: "id",
+      type: "input",
+      message: message,
+      default: def
+  });
+  return response.id;
+}
+
 async function getStringValue(fieldName, type) {
   
   const rules = JSON.parse(JSON.stringify(filterRules));
@@ -143,6 +153,7 @@ module.exports = {
   getDetailTypeName,
   getProperty,
   getPropertyValue,
+  text,
   BACK,
   DONE
 };

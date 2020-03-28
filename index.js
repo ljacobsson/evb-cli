@@ -19,24 +19,24 @@ program
   )
   .description("Starts an EventBridge pattern builder")
   .action(async cmd => {
-    await storage.init({
-      dir: EVB_CACHE_DIR
-    });
-    const ssoConfig = await storage.getItem("evb-cli-sso");
-    if (ssoConfig) {
-      await ssoAuth.configure({
-        clientName: "evb-cli",
-        startUrl: ssoConfig.startUrl,
-        accountId: ssoConfig.accountId,
-        region: ssoConfig.region
-      });
-
-      AWS.config.update({
-        credentials: await ssoAuth.authenticate(ssoConfig.role)
-      });
-    }
+    await authenticate();
     const schemaApi = new AWS.Schemas();
     await patternBuilder.buildPattern(cmd.format, schemaApi);
+  });
+
+  program
+  .command("input")
+  .alias("i")
+  .option("-f, --format <json|yaml>", "Select output format", "json")
+  .option(
+    "--sso",
+    "Authenticate with AWS SSO. Set environment variable EVB_CLI_SSO=1 for default behaviour"
+  )
+  .description("Starts an EventBridge InputTransformer builder")
+  .action(async cmd => {
+    await authenticate();
+    const schemaApi = new AWS.Schemas();
+    await patternBuilder.buildInputTransformer(cmd.format, schemaApi);
   });
 program
   .on("command:*", () => {
@@ -70,3 +70,21 @@ program.parse(process.argv);
 if (process.argv.length < 3) {
   program.help();
 }
+async function authenticate() {
+  await storage.init({
+    dir: EVB_CACHE_DIR
+  });
+  const ssoConfig = await storage.getItem("evb-cli-sso");
+  if (ssoConfig) {
+    await ssoAuth.configure({
+      clientName: "evb-cli",
+      startUrl: ssoConfig.startUrl,
+      accountId: ssoConfig.accountId,
+      region: ssoConfig.region
+    });
+    AWS.config.update({
+      credentials: await ssoAuth.authenticate(ssoConfig.role)
+    });
+  }
+}
+
