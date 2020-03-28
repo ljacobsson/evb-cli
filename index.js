@@ -8,7 +8,7 @@ const os = require("os");
 
 const EVB_CACHE_DIR = `${os.homedir()}/.evb-cli`;
 
-program.version("1.0.5", "-v, --vers", "output the current version");
+program.version("1.0.8", "-v, --vers", "output the current version");
 program
   .command("pattern")
   .alias("p")
