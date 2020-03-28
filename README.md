@@ -18,9 +18,9 @@ For AWS events, such as `aws.codepipeline` it's already enabled, but for custom 
 ![Demo](demo.gif)
 
 ### To generate an EventBridge InputTransformer object:
-[Input transformers](https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-input-transformer-tutorial.html) are useful when you only want a small portion of the event sent to your target. this command helps you navigate the JSON payload and generate the [InputTransformer CloudFormation object](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-events-rule-inputtransformer.html)
+[Input transformers](https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-input-transformer-tutorial.html) are useful when you only want a small portion of the event sent to your target. This command helps you navigate the JSON payload and generate the [InputTransformer CloudFormation object](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-events-rule-inputtransformer.html)
 
-`evb input` - Will prompt you with a wizard that helps you build the InputTransformer object. This is using EventBridge's schema registry (currently in preview).
+`evb input` will prompt you with a wizard that helps you build the InputTransformer object. This is using EventBridge's schema registry (currently in preview).
 
 `evb input --format <yaml|json>` - Output format. Default is `json`
 
