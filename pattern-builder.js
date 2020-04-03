@@ -162,6 +162,10 @@ async function browseEvents(format, schemas, eventbridge) {
       schemaResponse,
       sourceName
     );
+    const describeSchemaResponse = await schemas
+      .describeSchema({ RegistryName: registry.id, SchemaName: `${sourceName}@${detailTypeName}` })
+      .promise();
+    const schema = JSON.parse(describeSchemaResponse.Content);
 
     const targets = [];
     const resp = await evb
@@ -174,7 +178,7 @@ async function browseEvents(format, schemas, eventbridge) {
       const pattern = JSON.parse(rule.EventPattern);
       if (
         pattern.source == sourceName &&
-        pattern["detail-type"] == detailTypeName
+        pattern["detail-type"] == schema.components.schemas.AWSEvent["x-amazon-events-detail-type"]
       ) {
         const targetResponse = await evb
           .listTargetsByRule({
