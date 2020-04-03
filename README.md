@@ -26,6 +26,11 @@ For AWS events, such as `aws.codepipeline` it's already enabled, but for custom 
 
 ![Demo](demo-input.gif)
 
+### To browse targets of events:
+Select a schema from the schema registry and list its targets. Select a target to browse details such as ARN, event pattern, input transformation, etc.
+
+`evb browse`
+
 ## AWS SSO authentication
 
 To set up [AWS Single Sign-On](https://aws.amazon.com/single-sign-on/) auth you'll need to configure the following parameters:

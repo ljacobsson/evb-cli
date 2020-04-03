@@ -98,7 +98,7 @@ async function getDetailTypeName(schemas, sourceName) {
   const detailType = await prompt({
     name: "id",
     type: "list",
-    message: "Select source",
+    message: "Select detail-type",
     choices: detailTypes
   });
   
@@ -134,6 +134,30 @@ async function getRegistry(schemas) {
   return registry;
 }
 
+async function selectFrom(list, message) {
+  const answer = await prompt({
+    name: "id",
+    type: "list",
+    message: message || "Please select",
+    choices: [BACK, ...list]
+  });
+  return answer.id;
+}
+
+async function getEventBusName(eventbridge) {
+  const eventBusesResponse = await eventbridge.listEventBuses().promise();
+  const eventBuses = [
+    ...new Set(eventBusesResponse.EventBuses.map(p => p.Name))
+  ];
+  const eventBusName = await prompt({
+    name: "id",
+    type: "list",
+    message: "Select eventbus",
+    choices: eventBuses
+  });
+  return eventBusName.id;
+}
+
 async function getPropertyValue(chosenProp, property) {
   let answer = undefined;
   switch (chosenProp.type) {
@@ -148,9 +172,11 @@ async function getPropertyValue(chosenProp, property) {
 }
 
 module.exports = {
+  getEventBusName,
   getRegistry,
   getSourceName,
   getDetailTypeName,
+  selectFrom,
   getProperty,
   getPropertyValue,
   text,

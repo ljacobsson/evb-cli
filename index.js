@@ -8,7 +8,7 @@ const os = require("os");
 
 const EVB_CACHE_DIR = `${os.homedir()}/.evb-cli`;
 
-program.version("1.0.8", "-v, --vers", "output the current version");
+program.version("1.0.10", "-v, --vers", "output the current version");
 program
   .command("pattern")
   .alias("p")
@@ -38,6 +38,18 @@ program
     const schemaApi = new AWS.Schemas();
     await patternBuilder.buildInputTransformer(cmd.format, schemaApi);
   });
+  
+  program
+  .command("browse")
+  .alias("b")
+  .description("Browses sources and detail types and shows their consumers")
+  .action(async cmd => {
+    await authenticate();
+    const schemaApi = new AWS.Schemas();
+    const evbApi = new AWS.EventBridge();
+    await patternBuilder.browseEvents(cmd.format, schemaApi, evbApi);
+  });
+  
 program
   .on("command:*", () => {
     const command = program.args[0];

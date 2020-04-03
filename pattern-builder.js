@@ -120,9 +120,8 @@ async function buildInputTransformer(format, schemas) {
 
     const key = await inputUtil.text(
       "Key name",
-      objectArray[objectArray.length - 1].replace(
-        /-(\w)/g,
-        ($, $1) => $1.toUpperCase()
+      objectArray[objectArray.length - 1].replace(/-(\w)/g, ($, $1) =>
+        $1.toUpperCase()
       )
     );
 
@@ -146,6 +145,83 @@ function outputPattern(output, format) {
     console.log(JSON.stringify(output, null, 2));
   } else {
     console.log(YAML.stringify(output, null, 2));
+  }
+}
+
+async function browseEvents(format, schemas, eventbridge) {
+  const AWS = require("aws-sdk");
+  const evb = new AWS.EventBridge();
+  while (true) {
+    const eventBusName = await inputUtil.getEventBusName(evb);
+    const registry = await inputUtil.getRegistry(schemas);
+    const schemaResponse = await schemas
+      .listSchemas({ RegistryName: registry.id })
+      .promise();
+    const sourceName = await inputUtil.getSourceName(schemaResponse);
+    const detailTypeName = await inputUtil.getDetailTypeName(
+      schemaResponse,
+      sourceName
+    );
+
+    const targets = [];
+    const resp = await evb
+      .listRules({ EventBusName: eventBusName, Limit: 100 })
+      .promise();
+    for (const rule of resp.Rules) {
+      if (!rule.EventPattern) {
+        continue;
+      }
+      const pattern = JSON.parse(rule.EventPattern);
+      if (
+        pattern.source == sourceName &&
+        pattern["detail-type"] == detailTypeName
+      ) {
+        const targetResponse = await evb
+          .listTargetsByRule({
+            Rule: rule.Name,
+            EventBusName: eventBusName
+          })
+          .promise();
+        for (const target of targetResponse.Targets) {
+          const arnSplit = target.Arn.split(":");
+          const service = arnSplit[2];
+          const name = arnSplit[arnSplit.length - 1];
+          targets.push({
+            name: `${service}: ${name}`,
+            value: { pattern, target }
+          });
+        }
+      }
+    }
+    if (targets.length) {
+      while (true) {
+        console.log("CTRL+C to exit");
+        const target = await inputUtil.selectFrom(
+          targets,
+          "Select target for more info"
+        );
+
+        if (target === inputUtil.BACK) {
+          break;
+        }
+
+        let details = [{ name: "EventPattern", value: target.pattern }];
+        for (const key of Object.keys(target.target)) {
+          details.push({ name: key, value: target.target[key] });
+        }
+        const detail = await inputUtil.selectFrom(
+          details,
+          "Select property for more info"
+        );
+        if (detail === inputUtil.BACK) {
+          continue;
+        }
+
+        console.log("\n" + JSON.stringify(detail, null, 2) + "\n");
+      }
+    } else {
+      console.log("No subscribers found");
+    }
   }
 }
 
@@ -182,5 +258,6 @@ module.exports = {
   deepMerge,
   buildSegment,
   buildPattern,
-  buildInputTransformer
+  buildInputTransformer,
+  browseEvents
 };
