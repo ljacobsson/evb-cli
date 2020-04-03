@@ -29,7 +29,9 @@ For AWS events, such as `aws.codepipeline` it's already enabled, but for custom 
 ### To browse targets of events:
 Select a schema from the schema registry and list its targets. Select a target to browse details such as ARN, event pattern, input transformation, etc.
 
-`evb browse`
+`evb browse` will let you browse your schemas and get insights into the targets listening to the source/detail-type combination of your event. This only works with explicit maching on `source` and `detail-type`.
+
+![Demo](demo-browse.gif)
 
 ## AWS SSO authentication
 
