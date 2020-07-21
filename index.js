@@ -13,54 +13,58 @@ program
   .command("pattern")
   .alias("p")
   .option("-f, --format <json|yaml>", "Select output format", "json")
+  .option("-p, --profile <profile>", "AWS profile to use")
   .option(
     "--sso",
     "Authenticate with AWS SSO. Set environment variable EVB_CLI_SSO=1 for default behaviour"
   )
   .description("Starts an EventBridge pattern builder")
-  .action(async cmd => {
-    await authenticate();
+  .action(async (cmd) => {
+    await authenticate(cmd.profile);
     const schemaApi = new AWS.Schemas();
     await patternBuilder.buildPattern(cmd.format, schemaApi);
   });
 
-  program
+program
   .command("input")
   .alias("i")
   .option("-f, --format <json|yaml>", "Select output format", "json")
+  .option("-p, --profile <profile>", "AWS profile to use")
   .option(
     "--sso",
     "Authenticate with AWS SSO. Set environment variable EVB_CLI_SSO=1 for default behaviour"
   )
   .description("Starts an EventBridge InputTransformer builder")
-  .action(async cmd => {
-    await authenticate();
+  .action(async (cmd) => {
+    await authenticate(cmd.profile);
     const schemaApi = new AWS.Schemas();
     await patternBuilder.buildInputTransformer(cmd.format, schemaApi);
   });
-  
-  program
+
+program
   .command("browse")
   .alias("b")
+  .option("-p, --profile <profile>", "AWS profile to use")
   .description("Browses sources and detail types and shows their consumers")
-  .action(async cmd => {
-    await authenticate();
+  .action(async (cmd) => {
+    await authenticate(cmd.profile);
     const schemaApi = new AWS.Schemas();
     const evbApi = new AWS.EventBridge();
     await patternBuilder.browseEvents(cmd.format, schemaApi, evbApi);
   });
-  
-  program
-  .command("publish")
-//  .alias("p")
-  .description("Browses the schema registry and lets you publish messages built from schemas")
-  .action(async cmd => {
-    await authenticate();
-    const schemaApi = new AWS.Schemas();
-    const evbApi = new AWS.EventBridge();
-    await patternBuilder.publishEvents(cmd.format, schemaApi, evbApi);
-  });
-  
+
+//   program
+//   .command("publish")
+// //  .alias("p")
+//   .description("Browses the schema registry and lets you publish messages built from schemas")
+//   .option("-p, --profile <profile>", "AWS profile to use", "default")
+//   .action(async cmd => {
+//     await authenticate();
+//     const schemaApi = new AWS.Schemas();
+//     const evbApi = new AWS.EventBridge();
+//     await patternBuilder.publishEvents(cmd.format, schemaApi, evbApi);
+//   });
+
 program
   .on("command:*", () => {
     const command = program.args[0];
@@ -74,17 +78,17 @@ program
   .option("--region <region>", "AWS region")
   .option("--role <role>", "Role to get credentials for")
   .description("Configure authentication with AWS Single Sign-On")
-  .action(async cmd => {
+  .action(async (cmd) => {
     await storage.init({
       dir: EVB_CACHE_DIR,
-      expiredInterval: 0
+      expiredInterval: 0,
     });
 
     await storage.setItem("evb-cli-sso", {
       accountId: cmd.accountId,
       startUrl: cmd.startUrl,
       region: cmd.region,
-      role: cmd.role
+      role: cmd.role,
     });
   });
 
@@ -93,9 +97,15 @@ program.parse(process.argv);
 if (process.argv.length < 3) {
   program.help();
 }
-async function authenticate() {
+async function authenticate(profile) {
+  
+  if (profile) {
+    var credentials = new AWS.SharedIniFileCredentials({ profile: profile });
+    AWS.config.update({ credentials: credentials });
+  }
+
   await storage.init({
-    dir: EVB_CACHE_DIR
+    dir: EVB_CACHE_DIR,
   });
   const ssoConfig = await storage.getItem("evb-cli-sso");
   if (ssoConfig) {
@@ -103,11 +113,10 @@ async function authenticate() {
       clientName: "evb-cli",
       startUrl: ssoConfig.startUrl,
       accountId: ssoConfig.accountId,
-      region: ssoConfig.region
+      region: ssoConfig.region,
     });
     AWS.config.update({
-      credentials: await ssoAuth.authenticate(ssoConfig.role)
+      credentials: await ssoAuth.authenticate(ssoConfig.role),
     });
   }
 }
-
