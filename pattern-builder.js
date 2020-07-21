@@ -188,26 +188,6 @@ async function browseEvents(format, schemas, eventbridge) {
   }
 }
 
-async function getSchema(schemas) {
-  const registry = await inputUtil.getRegistry(schemas);
-  const schemaResponse = await schemas
-    .listSchemas({ RegistryName: registry.id })
-    .promise();
-  const sourceName = await inputUtil.getSourceName(schemaResponse);
-  const detailTypeName = await inputUtil.getDetailTypeName(
-    schemaResponse,
-    sourceName
-  );
-  const describeSchemaResponse = await schemas
-    .describeSchema({
-      RegistryName: registry.id,
-      SchemaName: `${sourceName}@${detailTypeName}`
-    })
-    .promise();
-  const schema = JSON.parse(describeSchemaResponse.Content);
-  return { schema, sourceName };
-}
-
 async function getTargets(schemas) {
   const { schema, sourceName } = await getSchema(schemas);
   const AWS = require("aws-sdk");
