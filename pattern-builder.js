@@ -1,5 +1,6 @@
 const inputUtil = require("./input-util");
 const YAML = require("json-to-pretty-yaml");
+const localIntegration = require("./local-integration");
 
 function init(source, detailType) {
   return { source: [source], "detail-type": [detailType] };
@@ -149,54 +150,8 @@ function outputPattern(output, format) {
 }
 
 async function browseEvents(format, schemas, eventbridge) {
-  const AWS = require("aws-sdk");
-  const evb = new AWS.EventBridge();
   while (true) {
-    const eventBusName = await inputUtil.getEventBusName(evb);
-    const registry = await inputUtil.getRegistry(schemas);
-    const schemaResponse = await schemas
-      .listSchemas({ RegistryName: registry.id })
-      .promise();
-    const sourceName = await inputUtil.getSourceName(schemaResponse);
-    const detailTypeName = await inputUtil.getDetailTypeName(
-      schemaResponse,
-      sourceName
-    );
-    const describeSchemaResponse = await schemas
-      .describeSchema({ RegistryName: registry.id, SchemaName: `${sourceName}@${detailTypeName}` })
-      .promise();
-    const schema = JSON.parse(describeSchemaResponse.Content);
-
-    const targets = [];
-    const resp = await evb
-      .listRules({ EventBusName: eventBusName, Limit: 100 })
-      .promise();
-    for (const rule of resp.Rules) {
-      if (!rule.EventPattern) {
-        continue;
-      }
-      const pattern = JSON.parse(rule.EventPattern);
-      if (
-        pattern.source == sourceName &&
-        pattern["detail-type"] == schema.components.schemas.AWSEvent["x-amazon-events-detail-type"]
-      ) {
-        const targetResponse = await evb
-          .listTargetsByRule({
-            Rule: rule.Name,
-            EventBusName: eventBusName
-          })
-          .promise();
-        for (const target of targetResponse.Targets) {
-          const arnSplit = target.Arn.split(":");
-          const service = arnSplit[2];
-          const name = arnSplit[arnSplit.length - 1];
-          targets.push({
-            name: `${service}: ${name}`,
-            value: { pattern, target }
-          });
-        }
-      }
-    }
+    const { targets } = await getTargets(schemas);
     if (targets.length) {
       while (true) {
         console.log("CTRL+C to exit");
@@ -213,12 +168,16 @@ async function browseEvents(format, schemas, eventbridge) {
         for (const key of Object.keys(target.target)) {
           details.push({ name: key, value: target.target[key] });
         }
+        details.push(inputUtil.CONSUME_LOCALLY);
         const detail = await inputUtil.selectFrom(
           details,
           "Select property for more info"
         );
         if (detail === inputUtil.BACK) {
           continue;
+        }
+        if (detail === inputUtil.CONSUME_LOCALLY) {
+          await localIntegration.createLocalConsumer(target);
         }
 
         console.log("\n" + JSON.stringify(detail, null, 2) + "\n");
@@ -227,6 +186,65 @@ async function browseEvents(format, schemas, eventbridge) {
       console.log("No subscribers found");
     }
   }
+}
+
+async function getSchema(schemas) {
+  const registry = await inputUtil.getRegistry(schemas);
+  const schemaResponse = await schemas
+    .listSchemas({ RegistryName: registry.id })
+    .promise();
+  const sourceName = await inputUtil.getSourceName(schemaResponse);
+  const detailTypeName = await inputUtil.getDetailTypeName(
+    schemaResponse,
+    sourceName
+  );
+  const describeSchemaResponse = await schemas
+    .describeSchema({
+      RegistryName: registry.id,
+      SchemaName: `${sourceName}@${detailTypeName}`
+    })
+    .promise();
+  const schema = JSON.parse(describeSchemaResponse.Content);
+  return { schema, sourceName };
+}
+
+async function getTargets(schemas) {
+  const { schema, sourceName } = await getSchema(schemas);
+  const AWS = require("aws-sdk");
+  const evb = new AWS.EventBridge();
+  const eventBusName = await inputUtil.getEventBusName(evb);
+  const targets = [];
+  const resp = await evb
+    .listRules({ EventBusName: eventBusName, Limit: 100 })
+    .promise();
+  for (const rule of resp.Rules) {
+    if (!rule.EventPattern) {
+      continue;
+    }
+    const pattern = JSON.parse(rule.EventPattern);
+    if (
+      pattern.source == sourceName &&
+      pattern["detail-type"] ==
+        schema.components.schemas.AWSEvent["x-amazon-events-detail-type"]
+    ) {
+      const targetResponse = await evb
+        .listTargetsByRule({
+          Rule: rule.Name,
+          EventBusName: eventBusName
+        })
+        .promise();
+      for (const target of targetResponse.Targets) {
+        const arnSplit = target.Arn.split(":");
+        const service = arnSplit[2];
+        const name = arnSplit[arnSplit.length - 1];
+        targets.push({
+          name: `${service}: ${name}`,
+          value: { pattern, target }
+        });
+      }
+    }
+  }
+  return { schema, targets };
 }
 
 async function getSchema(schemas) {

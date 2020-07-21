@@ -50,6 +50,17 @@ program
     await patternBuilder.browseEvents(cmd.format, schemaApi, evbApi);
   });
   
+  program
+  .command("publish")
+//  .alias("p")
+  .description("Browses the schema registry and lets you publish messages built from schemas")
+  .action(async cmd => {
+    await authenticate();
+    const schemaApi = new AWS.Schemas();
+    const evbApi = new AWS.EventBridge();
+    await patternBuilder.publishEvents(cmd.format, schemaApi, evbApi);
+  });
+  
 program
   .on("command:*", () => {
     const command = program.args[0];

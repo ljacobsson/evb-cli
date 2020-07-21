@@ -2,6 +2,7 @@ const inquirer = require("inquirer");
 const prompt = inquirer.createPromptModule();
 const BACK = "↩ back";
 const DONE = "✔ done";
+const CONSUME_LOCALLY = "⚡ consume locally";
 const backNavigation = [BACK, new inquirer.Separator("-------------")];
 const doneNavigation = [DONE, new inquirer.Separator("-------------")];
 const filterRules = [
@@ -181,5 +182,6 @@ module.exports = {
   getPropertyValue,
   text,
   BACK,
-  DONE
+  DONE,
+  CONSUME_LOCALLY
 };
