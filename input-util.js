@@ -135,12 +135,12 @@ async function getRegistry(schemas) {
   return registry;
 }
 
-async function selectFrom(list, message) {
+async function selectFrom(list, message, skipBack) {
   const answer = await prompt({
     name: "id",
     type: "list",
     message: message || "Please select",
-    choices: [BACK, ...list]
+    choices: [!skipBack ? BACK : null, ...list].filter(p => p)
   });
   return answer.id;
 }

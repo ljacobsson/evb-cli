@@ -3,8 +3,9 @@ const patternBuilder = require("./pattern-builder");
 const AWS = require("aws-sdk");
 const program = require("commander");
 const ssoAuth = require("@mhlabs/aws-sso-client-auth");
-const storage = require("node-persist");
+const inputUtil = require("./input-util");
 const os = require("os");
+const iniFileLoader = require("@aws-sdk/shared-ini-file-loader");
 
 const EVB_CACHE_DIR = `${os.homedir()}/.evb-cli`;
 
@@ -13,7 +14,7 @@ program
   .command("pattern")
   .alias("p")
   .option("-f, --format <json|yaml>", "Select output format", "json")
-  .option("-p, --profile <profile>", "AWS profile to use")
+  .option("-p, --profile [profile]", "AWS profile to use")
   .option(
     "--sso",
     "Authenticate with AWS SSO. Set environment variable EVB_CLI_SSO=1 for default behaviour"
@@ -29,7 +30,7 @@ program
   .command("input")
   .alias("i")
   .option("-f, --format <json|yaml>", "Select output format", "json")
-  .option("-p, --profile <profile>", "AWS profile to use")
+  .option("-p, --profile [profile]", "AWS profile to use")
   .option(
     "--sso",
     "Authenticate with AWS SSO. Set environment variable EVB_CLI_SSO=1 for default behaviour"
@@ -44,7 +45,7 @@ program
 program
   .command("browse")
   .alias("b")
-  .option("-p, --profile <profile>", "AWS profile to use")
+  .option("-p, --profile [profile]", "AWS profile to use")
   .description("Browses sources and detail types and shows their consumers")
   .action(async (cmd) => {
     await authenticate(cmd.profile);
@@ -53,70 +54,18 @@ program
     await patternBuilder.browseEvents(cmd.format, schemaApi, evbApi);
   });
 
-//   program
-//   .command("publish")
-// //  .alias("p")
-//   .description("Browses the schema registry and lets you publish messages built from schemas")
-//   .option("-p, --profile <profile>", "AWS profile to use", "default")
-//   .action(async cmd => {
-//     await authenticate();
-//     const schemaApi = new AWS.Schemas();
-//     const evbApi = new AWS.EventBridge();
-//     await patternBuilder.publishEvents(cmd.format, schemaApi, evbApi);
-//   });
-
-program
-  .on("command:*", () => {
-    const command = program.args[0];
-
-    console.error(`Unknown command '${command}'`);
-    process.exit(1);
-  })
-  .command("configure-sso")
-  .option("-a, --account-id <accountId>", "Account ID")
-  .option("-u, --start-url <startUrl>", "AWS SSO start URL")
-  .option("--region <region>", "AWS region")
-  .option("--role <role>", "Role to get credentials for")
-  .description("Configure authentication with AWS Single Sign-On")
-  .action(async (cmd) => {
-    await storage.init({
-      dir: EVB_CACHE_DIR,
-      expiredInterval: 0,
-    });
-
-    await storage.setItem("evb-cli-sso", {
-      accountId: cmd.accountId,
-      startUrl: cmd.startUrl,
-      region: cmd.region,
-      role: cmd.role,
-    });
-  });
-
 program.parse(process.argv);
 
 if (process.argv.length < 3) {
   program.help();
 }
 async function authenticate(profile) {
-  
-  if (profile) {
-    var credentials = new AWS.SharedIniFileCredentials({ profile: profile });
-    AWS.config.update({ credentials: credentials });
+  if (profile === true) {
+    const configFile = await iniFileLoader.loadSharedConfigFiles();
+    profile = await inputUtil.selectFrom(Object.keys(configFile.configFile), "Select profile", true);
   }
-
-  await storage.init({
-    dir: EVB_CACHE_DIR,
+  const config = await ssoAuth.requestAuth("evb-cli", profile);
+  AWS.config.update({
+    config
   });
-  const ssoConfig = await storage.getItem("evb-cli-sso");
-  if (ssoConfig) {
-    await ssoAuth.configure({
-      clientName: "evb-cli",
-      startUrl: ssoConfig.startUrl,
-      accountId: ssoConfig.accountId,
-      region: ssoConfig.region,
-    });
-    AWS.config.update({
-      credentials: await ssoAuth.authenticate(ssoConfig.role),
-    });
-  }
 }
