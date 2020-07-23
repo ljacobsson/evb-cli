@@ -32,13 +32,3 @@ Select a schema from the schema registry and list its targets. Select a target t
 `evb browse` will let you browse your schemas and get insights into the targets listening to the source/detail-type combination of your event. This only works with explicit maching on `source` and `detail-type`.
 
 ![Demo](demo-browse.gif)
-
-## AWS SSO authentication
-
-To set up [AWS Single Sign-On](https://aws.amazon.com/single-sign-on/) auth you'll need to configure the following parameters:
-
-```
-evb configure-sso --account-id 123456789012 --start-url https://<your-sso-url>.awsapps.com/start --region <your-region> --role <your-sso-role>
-```
-
-The role used should be allowed to perform `schemas:ListSchemas` and `schemas:DescribeSchemas`
