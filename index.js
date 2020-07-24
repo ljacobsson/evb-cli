@@ -9,7 +9,7 @@ const iniFileLoader = require("@aws-sdk/shared-ini-file-loader");
 
 const EVB_CACHE_DIR = `${os.homedir()}/.evb-cli`;
 
-program.version("1.0.11", "-v, --vers", "output the current version");
+program.version("1.0.13", "-v, --vers", "output the current version");
 program
   .command("pattern")
   .alias("p")
