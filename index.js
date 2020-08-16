@@ -2,14 +2,11 @@
 const patternBuilder = require("./pattern-builder");
 const AWS = require("aws-sdk");
 const program = require("commander");
-const ssoAuth = require("@mhlabs/aws-sso-client-auth");
 const inputUtil = require("./input-util");
-const os = require("os");
 const iniFileLoader = require("@aws-sdk/shared-ini-file-loader");
-
-const EVB_CACHE_DIR = `${os.homedir()}/.evb-cli`;
-
-program.version("1.0.13", "-v, --vers", "output the current version");
+require("@mhlabs/aws-sdk-sso");
+new AWS.SingleSignOnCredentials().init();
+program.version("1.0.15", "-v, --vers", "output the current version");
 program
   .command("pattern")
   .alias("p")
@@ -21,7 +18,6 @@ program
   )
   .description("Starts an EventBridge pattern builder")
   .action(async (cmd) => {
-    await authenticate(cmd.profile);
     const schemaApi = new AWS.Schemas();
     await patternBuilder.buildPattern(cmd.format, schemaApi);
   });
@@ -37,7 +33,6 @@ program
   )
   .description("Starts an EventBridge InputTransformer builder")
   .action(async (cmd) => {
-    await authenticate(cmd.profile);
     const schemaApi = new AWS.Schemas();
     await patternBuilder.buildInputTransformer(cmd.format, schemaApi);
   });
@@ -48,7 +43,6 @@ program
   .option("-p, --profile [profile]", "AWS profile to use")
   .description("Browses sources and detail types and shows their consumers")
   .action(async (cmd) => {
-    await authenticate(cmd.profile);
     const schemaApi = new AWS.Schemas();
     const evbApi = new AWS.EventBridge();
     await patternBuilder.browseEvents(cmd.format, schemaApi, evbApi);
@@ -58,14 +52,4 @@ program.parse(process.argv);
 
 if (process.argv.length < 3) {
   program.help();
-}
-async function authenticate(profile) {
-  if (profile === true) {
-    const configFile = await iniFileLoader.loadSharedConfigFiles();
-    profile = await inputUtil.selectFrom(Object.keys(configFile.configFile), "Select profile", true);
-  }
-  const config = await ssoAuth.requestAuth("evb-cli", profile);
-  AWS.config.update({
-    config
-  });
 }

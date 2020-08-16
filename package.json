@@ -1,6 +1,6 @@
 {
   "name": "@mhlabs/evb-cli",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "A package for building EventBridge/CloudWatch Events patterns",
   "main": "index.js",
   "scripts": {
@@ -13,7 +13,7 @@
   "author": "mhdev",
   "license": "ISC",
   "dependencies": {
-    "@mhlabs/aws-sso-client-auth": "^1.1.3",
+    "@mhlabs/aws-sdk-sso": "^0.0.6",
     "aws-sdk": "^2.639.0",
     "commander": "^4.1.1",
     "inquirer": "^7.0.4",
