@@ -2,8 +2,6 @@
 const patternBuilder = require("./pattern-builder");
 const AWS = require("aws-sdk");
 const program = require("commander");
-const inputUtil = require("./input-util");
-const iniFileLoader = require("@aws-sdk/shared-ini-file-loader");
 require("@mhlabs/aws-sdk-sso");
 new AWS.SingleSignOnCredentials().init();
 program.version("1.0.15", "-v, --vers", "output the current version");
