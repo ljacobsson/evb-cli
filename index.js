@@ -3,7 +3,7 @@ const patternBuilder = require("./pattern-builder");
 const AWS = require("aws-sdk");
 const program = require("commander");
 require("@mhlabs/aws-sdk-sso");
-program.version("1.0.16", "-v, --vers", "output the current version");
+program.version("1.0.17", "-v, --vers", "output the current version");
 program
   .command("pattern")
   .alias("p")
