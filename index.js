@@ -9,10 +9,6 @@ program
   .alias("p")
   .option("-f, --format <json|yaml>", "Select output format", "json")
   .option("-p, --profile [profile]", "AWS profile to use")
-  .option(
-    "--sso",
-    "Authenticate with AWS SSO. Set environment variable EVB_CLI_SSO=1 for default behaviour"
-  )
   .description("Starts an EventBridge pattern builder")
   .action(async (cmd) => {
     initAuth(cmd);
@@ -25,10 +21,6 @@ program
   .alias("i")
   .option("-f, --format <json|yaml>", "Select output format", "json")
   .option("-p, --profile [profile]", "AWS profile to use")
-  .option(
-    "--sso",
-    "Authenticate with AWS SSO. Set environment variable EVB_CLI_SSO=1 for default behaviour"
-  )
   .description("Starts an EventBridge InputTransformer builder")
   .action(async (cmd) => {
     initAuth(cmd);
