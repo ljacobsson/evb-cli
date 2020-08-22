@@ -73,7 +73,6 @@ async function buildPattern(format, schemas) {
       outputPattern(pattern, format);
       break;
     }
-    console.log(chosenProp);
     const path = chosenProp.$ref;
     if (path) {
       // If property points at reference, go to reference in schema and continue
