@@ -29,5 +29,6 @@
   },
   "bin": {
     "evb": "index.js"
-  }
+  },
+  "keywords": ["aws", "serverless", "eventbridge", "productivity"]
 }

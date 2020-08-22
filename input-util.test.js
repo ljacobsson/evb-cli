@@ -1,4 +1,4 @@
-const inputUtil = require("./input-util");
+const inputUtil = require("./src/input-util");
 
 test("buildSegment generates valid pattern", () => {
 });
