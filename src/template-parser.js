@@ -52,6 +52,9 @@ function getEventRules() {
 }
 
 async function injectPattern(pattern) {
+  if (!template) {
+    return;
+  }
   const choices = [];
   const resources = [...getLambdaFunctions(), ...getEventRules()];
   for (const key of resources) {
@@ -88,8 +91,8 @@ async function injectPattern(pattern) {
     if (!resource.value.Properties) {
       resource.value.Properties = {};
     }
-    resource.value.Properties.EventPattern = pattern
-    resource.value.Properties.EventBusName = eventBus
+    resource.value.Properties.EventPattern = pattern;
+    resource.value.Properties.EventBusName = eventBus;
     template.Resources[resource.name] = resource.value;
     fs.writeFileSync(
       templatePath,
