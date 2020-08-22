@@ -83,6 +83,21 @@ async function injectPattern(pattern) {
         : YAML.stringify(template)
     );
   }
+  if (resource.value.Type === "AWS::Events::Rule") {
+    const eventBus = await inputUtil.getEventBusName(new AWS.EventBridge());
+    if (!resource.value.Properties) {
+      resource.value.Properties = {};
+    }
+    resource.value.Properties.EventPattern = pattern
+    resource.value.Properties.EventBusName = eventBus
+    template.Resources[resource.name] = resource.value;
+    fs.writeFileSync(
+      templatePath,
+      format === "json"
+        ? JSON.stringify(template, null, 2)
+        : YAML.stringify(template)
+    );
+  }
 }
 
 module.exports = {
