@@ -32,3 +32,20 @@ Select a schema from the schema registry and list its targets. Select a target t
 `evb browse` will let you browse your schemas and get insights into the targets listening to the source/detail-type combination of your event. This only works with explicit maching on `source` and `detail-type`.
 
 ![Demo](demo-browse.gif)
+
+### To generate an interactive graph over the event rules of an eventbus
+```
+Usage: evb graph|g [options]
+
+Builds an interactive graph over an eventbus' rules 
+
+Options:
+  -b, --eventbus [eventbus]  Eventbus to create graph for (default: "default")
+  -p, --profile [profile]    AWS profile to use
+  -h, --help                 output usage information
+```
+![Demo](demo-graph.gif)
+
+This is an experimental feature. Grouping by tag is possible for the following target types: Lambda, StepFunctions, SNS, SQS, Kinesis. More will follow.
+
+![Demo](demo-browse.gif)

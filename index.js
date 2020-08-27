@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const patternBuilder = require("./src/pattern-builder");
+const graphBuilder = require("./src/graph-builder");
 const AWS = require("aws-sdk");
 const program = require("commander");
 const templateParser = require("./src/template-parser");
@@ -32,7 +33,7 @@ program
     await patternBuilder.buildInputTransformer(cmd.format, schemaApi);
   });
 
-program
+  program
   .command("browse")
   .alias("b")
   .option("-p, --profile [profile]", "AWS profile to use")
@@ -42,6 +43,17 @@ program
     const schemaApi = new AWS.Schemas();
     const evbApi = new AWS.EventBridge();
     await patternBuilder.browseEvents(cmd.format, schemaApi, evbApi);
+  });
+
+  program
+  .command("graph")
+  .alias("g")
+  .option("-b, --eventbus [eventbus]", "Eventbus to create graph for", "default")
+  .option("-p, --profile [profile]", "AWS profile to use")
+  .description("Builds an interactive graph over an eventbus' rules ")
+  .action(async (cmd) => {
+    initAuth(cmd);
+    await graphBuilder.build(cmd.eventbus);
   });
 
 program.parse(process.argv);
