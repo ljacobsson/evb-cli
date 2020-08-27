@@ -8,9 +8,6 @@ const { Spinner } = require("cli-spinner");
 const spinner = new Spinner();
 require("@mhlabs/aws-sdk-sso");
 const cfnTag = "aws:cloudformation:stack-name";
-AWS.config.credentialProvider.providers.unshift(
-  new AWS.SingleSignOnCredentials()
-);
 const eventBridge = new AWS.EventBridge();
 const lambda = new AWS.Lambda();
 const stepFunctions = new AWS.StepFunctions();
