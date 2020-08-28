@@ -47,5 +47,3 @@ Options:
 ![Demo](demo-graph.gif)
 
 This is an experimental feature. Grouping by tag is possible for the following target types: Lambda, StepFunctions, SNS, SQS, Kinesis. More will follow.
-
-![Demo](demo-browse.gif)

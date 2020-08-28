@@ -5,7 +5,7 @@ const AWS = require("aws-sdk");
 const program = require("commander");
 const templateParser = require("./src/template-parser");
 require("@mhlabs/aws-sdk-sso");
-program.version("1.1.3", "-v, --vers", "output the current version");
+program.version("1.1.4", "-v, --vers", "output the current version");
 program
   .command("pattern")
   .alias("p")
