@@ -4,7 +4,7 @@
     <style type="text/css">
       #mynetwork {
         width: 100%;
-        height: 800px;
+        height: 100vh;
         border: 1px solid lightgray;
       }
       .body {
@@ -73,61 +73,122 @@
             set.add(tagArray.key);
           }
         }
-        document.getElementById("tags").innerHTML =
-            "<option>Please select tag</option>";
-        
+        document.getElementById("tagGroup").innerHTML =
+          "<option>Please select tag</option>";
+        document.getElementById("tagFilter").innerHTML =
+          "<option>Include all</option>";
+
         for (const tag of Array.from(set).sort()) {
-          document.getElementById("tags").innerHTML +=
+          document.getElementById("tagGroup").innerHTML +=
+            "<option>" + tag + "</option>";
+          document.getElementById("tagFilter").innerHTML +=
             "<option>" + tag + "</option>";
         }
         document
-          .getElementById("tags")
-          .addEventListener("change", function (event) {
-            const tag = event.target.value;
-            nodes = new vis.DataSet(
-              nodes.get({ filter: (p) => !p.tagRelation })
-            );
-            edges = new vis.DataSet(
-              edges.get({ filter: (p) => !p.tagRelation })
-            );
-            network.setData({ nodes, edges });
-            for (const resource of tags) {
-              const targetName = resource.targetName;
-              const tagArrayValue = resource.tagArray.filter(
-                (p) => p.key === tag
-              )[0];
-              console.log(tagArrayValue);
-              let tagValue =
-                tagArrayValue && tagArrayValue
-                  ? tagArrayValue.value
-                  : "untagged";
-              console.log("tag", tagValue);
-              if (
-                tagValue &&
-                nodes.get({ filter: (p) => p.id === tagValue }).length === 0
-              ) {
-                nodes.add({
-                  id: tagValue,
-                  group: tagValue,
-                  value: 10,
-                  tagRelation: true,
-                  label: tagValue,
-                  shape: "image",
-                  image: createTagImage()
-                });
-              }
-              edges.add({
-                from: tagValue,
-                to: targetName,
-                arrows: { to: false },
-                length: 10,
-                dashes: true,
-                tagRelation: true
-              });
-              network.redraw();
-            }
-          });
+          .getElementById("tagGroup")
+          .addEventListener("change", groupByTag);
+        document
+          .getElementById("tagFilter")
+          .addEventListener("change", getFilterValues);
+        document
+          .getElementById("tagFilterValue")
+          .addEventListener("change", filterByTag);
       });
+
+      function filterByTag(event) {
+        const tag = document.getElementById("tagFilter").value;
+        const tagValue = event.target.value;
+        nodes = new vis.DataSet(nodes.get({ filter: (p) => !p.tagRelation }));
+        edges = new vis.DataSet(edges.get({ filter: (p) => !p.tagRelation }));
+        network.setData({ nodes, edges });
+        const filtered = [];
+        for (const resource of tags) {
+          const targetName = resource.targetName;
+          const tagArrayValue = resource.tagArray.filter(
+            (p) => p.key === tag && p.value === tagValue
+          )[0];
+          console.log(tagArrayValue, tag);
+          if (tagArrayValue) {
+            filtered.push(targetName);
+          }
+        }
+        console.log("filtered", filtered);
+        for (const node of nodes.get()) {
+          console.log("hiding", node);
+          if (!filtered.includes(node.id) && !node.sourceNode) {
+            nodes.update({ id: node.id, hidden: true });
+          } else {
+            nodes.update({ id: node.id, hidden: false });
+          }
+        }
+        network.redraw();
+      }
+      function getFilterValues(event) {
+        document.getElementById("tagFilterValue").innerHTML = "";
+        if (event.target.value === "Include all") {
+          filterByTag(event);
+          return;
+        }
+        const values = new Set();
+        for (const resource of tags) {
+          console.log(resource);
+          if (resource.tagArray) {
+            const val = resource.tagArray.filter(
+              (p) => p.key === event.target.value
+            )[0];
+            console.log(val);
+            if (val) {
+              values.add(val.value);
+            }
+          }
+        }
+        document.getElementById("tagFilterValue").innerHTML = "";
+        console.log(values);
+        for (const value of Array.from(values)) {
+          document.getElementById("tagFilterValue").innerHTML +=
+            "<option>" + value + "</option>";
+        }
+      }
+
+      function groupByTag(event) {
+        const tag = event.target.value;
+        nodes = new vis.DataSet(nodes.get({ filter: (p) => !p.tagRelation }));
+        edges = new vis.DataSet(edges.get({ filter: (p) => !p.tagRelation }));
+        network.setData({ nodes, edges });
+        for (const resource of tags) {
+          const targetName = resource.targetName;
+          const tagArrayValue = resource.tagArray.filter(
+            (p) => p.key === tag
+          )[0];
+          console.log(tagArrayValue);
+          let tagValue =
+            tagArrayValue && tagArrayValue ? tagArrayValue.value : "untagged";
+          console.log("tag", tagValue);
+          if (
+            tagValue &&
+            nodes.get({ filter: (p) => p.id === tagValue }).length === 0
+          ) {
+            nodes.add({
+              id: tagValue,
+              group: tagValue,
+              value: 10,
+              tagRelation: true,
+              label: tagValue,
+              shape: "image",
+              image: createTagImage(),
+            });
+          }
+          edges.add({
+            from: tagValue,
+            to: targetName,
+            arrows: { to: false },
+            length: 10,
+            dashes: true,
+            tagRelation: true,
+          });
+          network.redraw();
+        }
+      }
 
       function createTagImage() {
         var svg =
@@ -139,7 +200,11 @@
 
   <body onload="draw()">
     Group by:
-    <select id="tags"></select>
+    <select id="tagGroup"></select
+    ><br />
+    Filter by:
+    <select id="tagFilter"></select
+    >:<select id="tagFilterValue"></select>
     <div id="mynetwork"></div>
   </body>
 </html>

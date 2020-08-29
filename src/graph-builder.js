@@ -108,6 +108,7 @@ async function build(busName) {
                     shape: "image",
                     image: createImage("source"),
                     value: 10,
+                    sourceNode: true
                   });
                 }
                 if (nodes.filter((p) => p.id == targetName).length === 0) {

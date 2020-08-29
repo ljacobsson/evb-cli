@@ -1,0 +1,266 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Transform:
+- AWS::Serverless-2016-10-31
+Metadata:
+  AWS::ServerlessRepo::Application:
+    Name: evb-local
+    Description: Backend for evb-cli's local debugging
+    Author: mhlabs
+    SpdxLicenseId: MIT
+    LicenseUrl: LICENSE.txt
+    ReadmeUrl: README.md
+    Labels: ['eventbridge', 'evb-cli', 'debugging']
+    HomePageUrl: https://github.com/mhlabs/evb-cli#readme
+    SemanticVersion: 0.0.1
+    SourceCodeUrl: https://github.com/mhlabs/evb-cli
+Resources:
+  OnConnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: "."
+      Handler: src/connect.handler
+      MemorySize: 256
+      Runtime: nodejs12.x
+      Environment:
+        Variables:
+          ConnectionsTable:
+            Ref: ConnectionsTable
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: ConnectionsTable
+  RegistrationPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+    - WebSocket
+    - RegistrationFunction
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Ref: RegistrationFunction
+      Principal: apigateway.amazonaws.com
+  OnConnectPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+    - WebSocket
+    - OnConnectFunction
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Ref: OnConnectFunction
+      Principal: apigateway.amazonaws.com
+  OnDisconnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: "."
+      Handler: src/disconnect.handler
+      MemorySize: 256
+      Runtime: nodejs12.x
+      Environment:
+        Variables:
+          ConnectionsTable:
+            Ref: ConnectionsTable
+      Policies:
+      - Version: '2012-10-17'
+        Statement:
+        - Sid: Statement1
+          Effect: Allow
+          Action:
+          - events:DeleteRule
+          - events:ListTargetsByRule
+          - events:RemoveTargets
+          Resource:
+          - "*"
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: ConnectionsTable
+  OnDisconnectPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+    - WebSocket
+    - OnDisconnectFunction
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Ref: OnDisconnectFunction
+      Principal: apigateway.amazonaws.com
+  RegistrationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: "."
+      Handler: src/Registration.handler
+      MemorySize: 512
+      Timeout: 60
+      Runtime: nodejs12.x
+      Environment:
+        Variables:
+          ConnectionsTable:
+            Ref: ConnectionsTable
+          StackName:
+            Ref: AWS::StackName
+          AccountId:
+            Ref: AWS::AccountId
+          ApiId:
+            Ref: WebSocket
+      Policies:
+      - AmazonAPIGatewayInvokeFullAccess
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: ConnectionsTable
+      - Version: '2012-10-17'
+        Statement:
+        - Sid: Statement1
+          Effect: Allow
+          Action:
+          - events:DescribeRule
+          - events:ListTargetsByRule
+          - events:PutRule
+          - events:PutTargets
+          Resource:
+          - "*"
+      - Version: '2012-10-17'
+        Statement:
+        - Sid: Statement1
+          Effect: Allow
+          Action:
+          - cloudformation:ListStackResources
+          Resource:
+          - "*"
+  ConnectionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: id
+        AttributeType: S
+      - AttributeName: token
+        AttributeType: S
+      KeySchema:
+      - AttributeName: id
+        KeyType: HASH
+      GlobalSecondaryIndexes:
+      - IndexName: TokenGSI
+        KeySchema:
+        - AttributeName: token
+          KeyType: HASH
+        Projection:
+          ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+  WebSocket:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name:
+        Fn::Sub: "${AWS::StackName}-WebSocket"
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: "$request.body.action"
+  ConnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId:
+        Ref: WebSocket
+      Description: Connect Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnConnectFunction.Arn}/invocations
+  ConnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId:
+        Ref: WebSocket
+      RouteKey: "$connect"
+      AuthorizationType: NONE
+      OperationName: ConnectRoute
+      Target:
+        Fn::Join:
+        - "/"
+        - - integrations
+          - Ref: ConnectIntegration
+  RegistrationRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId:
+        Ref: WebSocket
+      RouteKey: register
+      AuthorizationType: NONE
+      Target:
+        Fn::Join:
+        - "/"
+        - - integrations
+          - Ref: RegistrationIntegration
+  RegistrationIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId:
+        Ref: WebSocket
+      Description: Registration Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RegistrationFunction.Arn}/invocations
+  DisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId:
+        Ref: WebSocket
+      RouteKey: "$disconnect"
+      AuthorizationType: NONE
+      Target:
+        Fn::Join:
+        - "/"
+        - - integrations
+          - Ref: DisconnectIntegration
+  DisconnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId:
+        Ref: WebSocket
+      Description: Disconnect Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnDisconnectFunction.Arn}/invocations
+  Deployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+    - RegistrationRoute
+    - ConnectRoute
+    - DisconnectRoute
+    Properties:
+      ApiId:
+        Ref: WebSocket
+  Stage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      StageName: Prod
+      Description: Prod Stage
+      DeploymentId:
+        Ref: Deployment
+      ApiId:
+        Ref: WebSocket
+  EventConsumer:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: "."
+      Runtime: nodejs12.x
+      Handler: src/EventConsumer.receiver
+      MemorySize: 512
+      Timeout: 10
+      Policies:
+      - AmazonAPIGatewayInvokeFullAccess
+      - DynamoDBReadPolicy:
+          TableName:
+            Ref: ConnectionsTable
+      Environment:
+        Variables:
+          ApiId:
+            Ref: WebSocket
+          ConnectionsTable:
+            Ref: ConnectionsTable
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+  EventConsumerPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Ref: EventConsumer
+      Principal: events.amazonaws.com
+ 
+Outputs: {}

@@ -1,11 +1,6 @@
 # evb-cli
 Pattern generator for CloudWatch Events / EventBridge
 
-## Installation 
-Unless using AWS Single Sign-On, make sure you have your `AWS_REGION` environment variable set. Alternatively set `AWS_SDK_LOAD_CONFIG` to a truthy value.
-
-`npm install -g @mhlabs/evb-cli`
-
 ## Usage
 
 ### To generate an EventBridge pattern:
@@ -47,3 +42,27 @@ Options:
 ![Demo](demo-graph.gif)
 
 This is an experimental feature. Grouping by tag is possible for the following target types: Lambda, StepFunctions, SNS, SQS, Kinesis. More will follow.
+
+
+## Local debugging
+Local debugging makes use to API Gateway V2 websockets to forward actual events in the cloud to your developer machine. The requires a [Serverless Application Repository app](https://serverlessrepo.aws.amazon.com/applications/eu-west-1/751354400372/evb-local) to be installed in your account. Note that depending on your traffic, there will be some small effect on your billing in the form of Lambda invocations, API Gateway invocations, CloudWatch Logs and DynamoDB R/W.
+
+![Demo](demo-local.gif)
+Example of testing a rule before deploying the stack. The user quickly gets feedback on their patterns and input transforms
+
+There are three methods of consuming events cpovering three use cases:
+### Listen to all deployed rules in a given stack
+*Command*: `evb local --stack-name <stack-name>`
+*Use case*: You have a deployed stack and want to analyse the events matching any rule in the stack. Useful if you want to real-time monitor actual behaviour of the application.
+
+### Test a rule before deploying the stack
+*Command*: `evb local --rule <rule logical id (optional)>`
+*Use cases*: 
+* You want to test a pattern or input transformation without deploying the entire stack. This speeds up trial and error resolutions. 
+* You want to analyse traffic for a given pattern over time
+If the rule's logical ID is omitted such as `evb local --rule` the tool will parse the template and let you navigate and choose the rule
+
+### Test a given ARN on a deployed stack
+*Command*: `evb local --arn <rule-arn>`
+*Use cases*: 
+* You want to test the behaviour of an already deployed rule where you don't know the stack's name or where it doesn't belong to a stack.
