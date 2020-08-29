@@ -82,3 +82,6 @@ If the rule's logical ID is omitted such as `evb local --rule` the tool will par
 *Command*: `evb local --arn <rule-arn>`
 *Use cases*: 
 * You want to test the behaviour of an already deployed rule where you don't know the stack's name or where it doesn't belong to a stack.
+
+## Forward events to sam-local
+All `evb local` commands support a `--sam-local` flag. When used, events will be passed on to sam-local for more advanced debugging
