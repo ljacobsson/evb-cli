@@ -9,7 +9,7 @@ const localPatternListener = require("./src/evb-local/listeners/localPatternList
 const arnListener = require("./src/evb-local/listeners/arnListener");
 
 require("@mhlabs/aws-sdk-sso");
-program.version("1.1.4", "-v, --vers", "output the current version");
+program.version("1.1.5", "-v, --vers", "output the current version");
 program
   .command("pattern")
   .alias("p")
