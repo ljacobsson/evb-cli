@@ -27,7 +27,6 @@ function handleSAMFunction(resource, rules, resourceKey) {
   function handleEventsRule(resource, rules, resourceKey) {
     if (resource.Type === 'AWS::Events::Rule' && resource.Properties) {
       const rule = {
-        Target: resourceKey,
         EventPattern: JSON.stringify(resource.Properties.EventPattern),
         EventBusName: resource.Properties.EventBusName || 'default'
       };
@@ -41,6 +40,7 @@ function handleSAMFunction(resource, rules, resourceKey) {
         } else {
           targetName = target.Arn.split(':').slice(-1)[0];
         }
+        rule.Target = targetName;
         rules.push({
           ...rule,
           Name: `${resourceKey} -> ${targetName}`,
