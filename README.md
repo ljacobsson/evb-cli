@@ -48,9 +48,25 @@ This is an experimental feature. Grouping by tag is possible for the following t
 Local debugging makes use to API Gateway V2 websockets to forward actual events in the cloud to your developer machine. The requires a [Serverless Application Repository app](https://serverlessrepo.aws.amazon.com/applications/eu-west-1/751354400372/evb-local) to be installed in your account. Note that depending on your traffic, there will be some small effect on your billing in the form of Lambda invocations, API Gateway invocations, CloudWatch Logs and DynamoDB R/W.
 
 ![Demo](demo-local.gif)
-Example of testing a rule before deploying the stack. The user quickly gets feedback on their patterns and input transforms
 
-There are three methods of consuming events cpovering three use cases:
+Example of testing a rule before deploying the stack. The user quickly gets feedback on their patterns and input transforms. In this example we're listening to all aws.* events and trasnformting the output to 
+```
+{
+  "source": <source>,
+  "time": <time>
+}
+```
+The user then decided to add `detail-type` to the transform:
+```
+{
+  "source": <source>,
+  "detail-type": <detail-type>,
+  "time": <time>
+}
+```
+
+
+There are three methods of consuming events covering three use cases:
 ### Listen to all deployed rules in a given stack
 *Command*: `evb local --stack-name <stack-name>`
 *Use case*: You have a deployed stack and want to analyse the events matching any rule in the stack. Useful if you want to real-time monitor actual behaviour of the application.
@@ -66,3 +82,6 @@ If the rule's logical ID is omitted such as `evb local --rule` the tool will par
 *Command*: `evb local --arn <rule-arn>`
 *Use cases*: 
 * You want to test the behaviour of an already deployed rule where you don't know the stack's name or where it doesn't belong to a stack.
+
+## Forward events to sam-local
+All `evb local` commands support a `--sam-local` flag. When used, events will be passed on to sam-local for more advanced debugging
