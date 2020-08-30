@@ -10,6 +10,18 @@
       .body {
         font-family: Arial, Helvetica, sans-serif;
       }
+      #wssOutput {
+        right: 0px;
+        top: 0px;
+        height: 100vh;
+        width: 30%;
+        background-color: rgba(80, 197, 251, 0.7);
+        border: blue 4px;
+        z-index: 2999;
+        position: absolute;
+        font-family: "Courier New", Courier, monospace;
+        overflow: scroll;
+      }
     </style>
     <script
       type="text/javascript"
@@ -25,6 +37,36 @@
 
     <script type="text/javascript">
       let network;
+      let token = uuidv4();      
+      let socket;
+      const rule = {
+        EventPattern: '{"source":["aws.events"]}',
+        EventBusName: "default",
+        Target: "MyFunction",
+        Name: "AllAWSEvents -> MyFunction",
+        InputPath: undefined,
+        Input: undefined,
+        InputTransformer: {
+          InputPathsMap: {
+            source: "$.source",
+            detailType: "$.detail-type",
+            time: "$.time",
+          },
+          InputTemplate:
+            '{"source": <source>, "detail-type": <detailType>, "time": <time> }',
+        },
+      };
+
+      function uuidv4() {
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+          /[xy]/g,
+          function (c) {
+            var r = (Math.random() * 16) | 0,
+              v = c == "x" ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+          }
+        );
+      }
 
       function draw() {
         // create a network
@@ -64,6 +106,47 @@
           },
         };
         network = new vis.Network(container, data, options);
+        network.on("selectEdge", function (params) {          
+          if (socket) {
+            socket.close();
+          }
+          socket = new WebSocket(wssUrl);
+          socket.onopen = function (e) {
+            token = uuidv4();
+            const edge = edges.get(params.edges[0]);
+            socket.send(
+              JSON.stringify({
+                action: "register",
+                token: token,
+                localRule: edge.rule,
+                targetId: edge.rule.Target.Id,
+              })
+            );
+            socket.onmessage = function (event) {
+              if (event.data.startsWith("Connect")) {
+                document.getElementById(
+                  "feed"
+                ).innerHTML += `Subscribing to ${JSON.stringify(
+                  JSON.parse(edge.rule.EventPattern),
+                  null,
+                  2
+                )} <br>`;
+              } else {
+                const body = JSON.parse(event.data).Body;
+                document.getElementById(
+                  "feed"
+                ).innerHTML += `*****${new Date().toISOString()}*****<br>${JSON.stringify(
+                  body,
+                  null,
+                  2
+                )}<br>`;
+              }
+              var messageBody = document.querySelector("#wssOutput");
+              messageBody.scrollTop =
+                messageBody.scrollHeight - messageBody.clientHeight;
+            };
+          };
+        });
         network.body.emitter.emit("_dataChanged");
       }
       window.addEventListener("load", function (event) {
@@ -107,14 +190,11 @@
           const tagArrayValue = resource.tagArray.filter(
             (p) => p.key === tag && p.value === tagValue
           )[0];
-          console.log(tagArrayValue, tag);
           if (tagArrayValue) {
             filtered.push(targetName);
           }
         }
-        console.log("filtered", filtered);
         for (const node of nodes.get()) {
-          console.log("hiding", node);
           if (!filtered.includes(node.id) && !node.sourceNode) {
             nodes.update({ id: node.id, hidden: true });
           } else {
@@ -131,19 +211,16 @@
         }
         const values = new Set();
         for (const resource of tags) {
-          console.log(resource);
           if (resource.tagArray) {
             const val = resource.tagArray.filter(
               (p) => p.key === event.target.value
             )[0];
-            console.log(val);
             if (val) {
               values.add(val.value);
             }
           }
         }
         document.getElementById("tagFilterValue").innerHTML = "";
-        console.log(values);
         for (const value of Array.from(values)) {
           document.getElementById("tagFilterValue").innerHTML +=
             "<option>" + value + "</option>";
@@ -160,10 +237,8 @@
           const tagArrayValue = resource.tagArray.filter(
             (p) => p.key === tag
           )[0];
-          console.log(tagArrayValue);
           let tagValue =
             tagArrayValue && tagArrayValue ? tagArrayValue.value : "untagged";
-          console.log("tag", tagValue);
           if (
             tagValue &&
             nodes.get({ filter: (p) => p.id === tagValue }).length === 0
@@ -182,7 +257,7 @@
             from: tagValue,
             to: targetName,
             arrows: { to: false },
-            length: 10,
+            length: 40,
             dashes: true,
             tagRelation: true,
           });
@@ -206,5 +281,9 @@
     <select id="tagFilter"></select
     >:<select id="tagFilterValue"></select>
     <div id="mynetwork"></div>
+    <div id="wssOutput">
+      <div>Event feed:<br>Click on a connection to subscribe to its events</div>
+      <pre id="feed"></pre>
+    </div>
   </body>
 </html>

@@ -19,8 +19,8 @@ async function create(event) {
     const targets = [
       eventBridgeClient.createTarget(
         eventConsumerName,
-        localRule,
         localRule.Target,
+        body.targetId,
         token
       ),
     ];

@@ -5,6 +5,7 @@ const iconMap = require("../ui/icons").iconMap;
 const open = require("open");
 const tempDirectory = require("temp-dir");
 const { Spinner } = require("cli-spinner");
+const websocket = require("./evb-local/listeners/websocket");
 const spinner = new Spinner();
 require("@mhlabs/aws-sdk-sso");
 const cfnTag = "aws:cloudformation:stack-name";
@@ -108,7 +109,7 @@ async function build(busName) {
                     shape: "image",
                     image: createImage("source"),
                     value: 10,
-                    sourceNode: true
+                    sourceNode: true,
                   });
                 }
                 if (nodes.filter((p) => p.id == targetName).length === 0) {
@@ -128,6 +129,7 @@ async function build(busName) {
                   to: targetName,
                   label: pattern["detail-type"][0],
                   title: `<pre>${JSON.stringify(pattern, null, 2)}<pre>`,
+                  rule: { EventBusName: rule.EventBusName, EventPattern: rule.EventPattern, Target: target },
                 });
               }
             }
@@ -146,6 +148,7 @@ async function build(busName) {
   var tags = ${JSON.stringify(resourceTags)};
   var nodes = new vis.DataSet(${JSON.stringify(nodes)});
   var edges = new vis.DataSet(${JSON.stringify(edges)});
+  var wssUrl = '${await websocket.apiUrl()}'
   `;
   const uiPath = path.join(tempDirectory, "evb-graph");
   if (!fs.existsSync(uiPath)) {

@@ -77,7 +77,14 @@ async function apiId() {
   }
 }
 
+async function apiUrl() {
+  return `wss://${await apiId()}.execute-api.${
+    process.env.AWS_REGION
+  }.amazonaws.com/Prod`
+}
+
 module.exports = {
   connect,
   apiId,
+  apiUrl,
 };
