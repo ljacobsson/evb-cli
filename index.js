@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 const patternBuilder = require("./src/pattern-builder");
-const graphBuilder = require("./src/graph-builder");
+const diagramBuilder = require("./src/diagram-builder");
 const AWS = require("aws-sdk");
 const program = require("commander");
 const templateParser = require("./src/template-parser");
 const stackListener = require("./src/evb-local/listeners/stackListener");
 const localPatternListener = require("./src/evb-local/listeners/localPatternListener");
 const arnListener = require("./src/evb-local/listeners/arnListener");
+var package = require('./package.json');
 
 require("@mhlabs/aws-sdk-sso");
-program.version("1.1.7", "-v, --vers", "output the current version");
+program.version(package.version, "-v, --vers", "output the current version");
 program
   .command("pattern")
   .alias("p")
@@ -50,18 +51,18 @@ program
   });
 
 program
-  .command("graph")
-  .alias("g")
+  .command("diagram")
+  .alias("d")
   .option(
     "-b, --eventbus [eventbus]",
-    "Eventbus to create graph for",
+    "Eventbus to create diagram for",
     "default"
   )
   .option("-p, --profile [profile]", "AWS profile to use")
-  .description("Builds an interactive graph over an eventbus' rules ")
+  .description("Builds an interactive diagram over an eventbus' rules ")
   .action(async (cmd) => {
     initAuth(cmd);
-    await graphBuilder.build(cmd.eventbus);
+    await diagramBuilder.build(cmd.eventbus);
   });
 
 const ruleDefault = "choose from template";
@@ -107,7 +108,12 @@ program
       return;
     }
   });
-
+if (process.argv.length > 2) {
+  // Renamed graph to diagram to be semantically correct. This is for backward compatability
+  if (process.argv[2] === "graph" || process.argv[2] === "g") {
+    process.argv[2] = "diagram";
+  }
+}
 program.parse(process.argv);
 
 if (process.argv.length < 3) {

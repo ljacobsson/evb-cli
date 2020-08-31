@@ -1,12 +1,12 @@
 const WebSocket = require("ws");
 const AWS = require("aws-sdk");
-
+let ws;
 function connect(url, token, stackName, compact, sam, rule, ruleArn, target) {
   const lambda = new AWS.Lambda({
     endpoint: "http://127.0.0.1:3001/",
     sslEnabled: false,
   });
-  const ws = new WebSocket(url);
+  ws = new WebSocket(url);
 
   ws.on("open", function open() {
     const payload = JSON.stringify({
@@ -83,8 +83,13 @@ async function apiUrl() {
   }.amazonaws.com/Prod`
 }
 
+function disconnect() {
+  ws.close();
+}
+
 module.exports = {
   connect,
+  disconnect,
   apiId,
   apiUrl,
 };

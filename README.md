@@ -28,18 +28,18 @@ Select a schema from the schema registry and list its targets. Select a target t
 
 ![Demo](demo-browse.gif)
 
-### To generate an interactive graph over the event rules of an eventbus
+### To generate an interactive diagram over the event rules of an eventbus
 ```
-Usage: evb graph|g [options]
+Usage: evb diagram|d [options]
 
-Builds an interactive graph over an eventbus' rules 
+Builds an interactive diagram over an eventbus' rules 
 
 Options:
-  -b, --eventbus [eventbus]  Eventbus to create graph for (default: "default")
+  -b, --eventbus [eventbus]  Eventbus to create diagram for (default: "default")
   -p, --profile [profile]    AWS profile to use
   -h, --help                 output usage information
 ```
-![Demo](demo-graph.gif)
+![Demo](demo-diagram.gif)
 
 This is an experimental feature. Grouping by tag is possible for the following target types: Lambda, StepFunctions, SNS, SQS, Kinesis. More will follow.
 

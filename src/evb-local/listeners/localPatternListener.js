@@ -100,6 +100,11 @@ async function initLocalPatternListener(ruleName, templateFile, compact, sam) {
   console.log("Connecting...");
 }
 
+function disconnect() {
+  websocket.disconnect();
+}
+
 module.exports = {
   init: initLocalPatternListener,
+  disconnect
 };
