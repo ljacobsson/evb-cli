@@ -12,7 +12,7 @@ Metadata:
     ReadmeUrl: README.md
     Labels: ['eventbridge', 'evb-cli', 'debugging']
     HomePageUrl: https://github.com/mhlabs/evb-cli#readme
-    SemanticVersion: 0.0.2
+    SemanticVersion: 0.0.3
     SourceCodeUrl: https://github.com/mhlabs/evb-cli
 Resources:
   OnConnectFunction:
@@ -243,6 +243,7 @@ Resources:
       Handler: src/EventConsumer.receiver
       MemorySize: 512
       Timeout: 10
+      ReservedConcurrentExecutions: 10
       Policies:
       - AmazonAPIGatewayInvokeFullAccess
       - DynamoDBReadPolicy:
