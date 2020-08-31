@@ -1,7 +1,9 @@
 const WebSocket = require("ws");
 const AWS = require("aws-sdk");
+
 let ws;
-function connect(url, token, stackName, compact, sam, rule, ruleArn, target) {
+function connect(url, token, stackName, compact, sam, rule, ruleArn, target, output) {
+  output = output || console;
   const lambda = new AWS.Lambda({
     endpoint: "http://127.0.0.1:3001/",
     sslEnabled: false,
@@ -19,7 +21,7 @@ function connect(url, token, stackName, compact, sam, rule, ruleArn, target) {
     });
     ws.send(payload, (err) => {
       if (err) {
-        console.log(err);
+        output.log(err);
       }
     });
   });
@@ -34,9 +36,9 @@ function connect(url, token, stackName, compact, sam, rule, ruleArn, target) {
         presentationObject = obj.Body;
       }
       if (compact) {
-        console.log(JSON.stringify(presentationObject));
+        output.log(JSON.stringify(presentationObject));
       } else {
-        console.log(JSON.stringify(presentationObject, null, 2));
+        output.log(JSON.stringify(presentationObject, null, 2));
       }
       if (sam) {
         try {
@@ -47,19 +49,19 @@ function connect(url, token, stackName, compact, sam, rule, ruleArn, target) {
             })
             .promise();
         } catch (err) {
-          console.log(err);
+          output.log(err);
         }
       }
     } catch {
-      console.log(data);
+      output.log(data);
     }
   });
 
   return ws;
 }
 
-async function apiId() {
-  const cloudFormation = new AWS.CloudFormation();
+async function apiId(cloudFormationClient) {
+  const cloudFormation = cloudFormationClient || new AWS.CloudFormation();
   try {
     const evbLocalStack = await cloudFormation
       .listStackResources({ StackName: "serverlessrepo-evb-local" })
@@ -69,9 +71,9 @@ async function apiId() {
     )[0].PhysicalResourceId;
     return apiGatewayId;
   } catch(err){
-    console.log(err.message);
-    console.log("Please make sure the evb-local backend has been deployed in your account.");
-    console.log("Visit https://serverlessrepo.aws.amazon.com/applications/eu-west-1/751354400372/evb-local and follow the instructions")
+    output.log(err.message);
+    output.log("Please make sure the evb-local backend has been deployed in your account.");
+    output.log("Visit https://serverlessrepo.aws.amazon.com/applications/eu-west-1/751354400372/evb-local and follow the instructions")
 
     process.exit();
   }

@@ -6,7 +6,6 @@ const templateParser = require("../templateParser");
 const websocket = require("./websocket");
 const inquirer = require("inquirer");
 const prompt = inquirer.createPromptModule();
-
 const intrinsicFunctions = [
   "Fn::Base64",
   "Fn::Cidr",
@@ -45,7 +44,7 @@ async function initLocalPatternListener(ruleName, templateFile, compact, sam) {
   try {
     templateString = fs.readFileSync(templateFile);
   } catch {
-    console.log(
+    output.log(
       `Can't find ${templateFile}. Specify location with -t flag, for example 'evb-local test-rule -t serverless.template'`
     );
     process.exit(1);
@@ -62,7 +61,7 @@ async function initLocalPatternListener(ruleName, templateFile, compact, sam) {
     rules = rules.sort((a, b) => a.Name > b.Name);
   }
   if (ruleName) {
-    rule = rules.filter(r => r.Name === `${ruleName}->${target}`)[0];
+    rule = rules.filter((r) => r.Name === `${ruleName}->${target}`)[0];
   } else {
     var ruleResponse = await prompt({
       name: "rule",
@@ -74,12 +73,21 @@ async function initLocalPatternListener(ruleName, templateFile, compact, sam) {
     });
     rule = ruleResponse.rule;
   }
+  await initConnection(rule, ruleName, compact, sam);
+}
+
+async function initConnection(rule, ruleName, compact, sam, cloudFormationClient, output) {
+  output = output || console;
   const keyArray = [];
-  findAllKeys(JSON.parse(rule.EventPattern), keyArray);
+  if (typeof rule.EventPattern === "object") {
+    findAllKeys(rule.EventPattern, keyArray);
+  } else {
+    findAllKeys(JSON.parse(rule.EventPattern), keyArray);
+  }
 
   for (const func of intrinsicFunctions) {
     if (keyArray.includes(func)) {
-      console.error(
+      ouput.error(
         `Your pattern includes an intrinsic function [${func}]. The current version of evb-local can't handle this.`
       );
       process.exit(1);
@@ -88,16 +96,19 @@ async function initLocalPatternListener(ruleName, templateFile, compact, sam) {
 
   const token = uuidv4();
   websocket.connect(
-    `wss://${await websocket.apiId()}.execute-api.${
+    `wss://${await websocket.apiId(cloudFormationClient)}.execute-api.${
       process.env.AWS_REGION
     }.amazonaws.com/Prod`,
     token,
     ruleName,
     compact,
     sam,
-    rule
+    rule,
+    null,
+    null,
+    output
   );
-  console.log("Connecting...");
+  output.log("Connecting...");
 }
 
 function disconnect() {
@@ -106,5 +117,6 @@ function disconnect() {
 
 module.exports = {
   init: initLocalPatternListener,
-  disconnect
+  disconnect,
+  initConnection,
 };

@@ -15,15 +15,19 @@ async function create(event) {
       localRule,
       ruleName
     );
+    console.log(eventConsumerName, localRule, body, token);
+    const targets = [];
+    for (const target of localRule.Targets || [localRule.Target]) {
+      targets.push(
+        eventBridgeClient.createTarget(
+          eventConsumerName,
+          target,
+          body.targetId,
+          token
+        )
+      );
+    }
 
-    const targets = [
-      eventBridgeClient.createTarget(
-        eventConsumerName,
-        localRule.Target,
-        body.targetId,
-        token
-      ),
-    ];
     await eventBridgeClient.putTargets(
       localRule.EventBusName,
       ruleName,
