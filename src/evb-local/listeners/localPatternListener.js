@@ -20,6 +20,7 @@ const intrinsicFunctions = [
   "Fn::Transform",
   "Ref",
 ];
+let output = console;
 function findAllKeys(obj, keyArray) {
   keyArray.push(...Object.keys(obj));
   for (const prop of Object.keys(obj)) {
@@ -87,10 +88,10 @@ async function initConnection(rule, ruleName, compact, sam, cloudFormationClient
 
   for (const func of intrinsicFunctions) {
     if (keyArray.includes(func)) {
-      ouput.error(
+      output.error(
         `Your pattern includes an intrinsic function [${func}]. The current version of evb-local can't handle this.`
       );
-      process.exit(1);
+      return;
     }
   }
 

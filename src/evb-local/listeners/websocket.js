@@ -86,7 +86,8 @@ async function apiUrl() {
 }
 
 function disconnect() {
-  ws.close();
+  if (ws)
+    ws.close();
 }
 
 module.exports = {
