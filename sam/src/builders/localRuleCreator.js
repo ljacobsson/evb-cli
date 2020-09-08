@@ -17,11 +17,22 @@ async function create(event) {
     );
     console.log(eventConsumerName, localRule, body, token);
     const targets = [];
-    for (const target of localRule.Targets || [localRule.Target]) {
+    if (localRule.Targets) {
+      for (const target of localRule.Targets) {
+        targets.push(
+          eventBridgeClient.createTarget(
+            eventConsumerName,
+            target,
+            body.targetId,
+            token
+          )
+        );
+      }
+    } else {
       targets.push(
         eventBridgeClient.createTarget(
           eventConsumerName,
-          target,
+          localRule,
           body.targetId,
           token
         )
