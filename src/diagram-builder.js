@@ -9,12 +9,21 @@ const websocket = require("./evb-local/listeners/websocket");
 const spinner = new Spinner();
 require("@mhlabs/aws-sdk-sso");
 const cfnTag = "aws:cloudformation:stack-name";
-const eventBridge = new AWS.EventBridge();
-const lambda = new AWS.Lambda();
-const stepFunctions = new AWS.StepFunctions();
-const sns = new AWS.SNS();
-const sqs = new AWS.SQS();
-const kinesis = new AWS.Kinesis();
+let eventBridge = new AWS.EventBridge();
+let lambda = new AWS.Lambda();
+let stepFunctions = new AWS.StepFunctions();
+let sns = new AWS.SNS();
+let sqs = new AWS.SQS();
+let kinesis = new AWS.Kinesis();
+
+function initApis() {
+  eventBridge = new AWS.EventBridge();
+  lambda = new AWS.Lambda();
+  stepFunctions = new AWS.StepFunctions();
+  sns = new AWS.SNS();
+  sqs = new AWS.SQS();
+  kinesis = new AWS.Kinesis();  
+}
 
 const describeMap = {
   kinesis: {
@@ -72,6 +81,7 @@ function createImage(resourceType) {
 }
 
 async function build(busName) {
+  initApis();
   let nodes = [];
   let edges = [];
   let resourceTags = [];
