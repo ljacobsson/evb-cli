@@ -17,6 +17,7 @@ program
   .option("-f, --format <json|yaml>", "Select output format", "json")
   .option("-p, --profile [profile]", "AWS profile to use")
   .option("-t, --template [template]", "Path to template file", "template.yml")
+  .option("--region [region]", "The AWS region to use. Falls back on AWS_REGION environment variable if not specified")
   .description("Starts an EventBridge pattern builder")
   .action(async (cmd) => {
     initAuth(cmd);
@@ -31,6 +32,7 @@ program
   .alias("i")
   .option("-f, --format <json|yaml>", "Select output format", "json")
   .option("-p, --profile [profile]", "AWS profile to use")
+  .option("--region [region]", "The AWS region to use. Falls back on AWS_REGION environment variable if not specified")
   .description("Starts an EventBridge InputTransformer builder")
   .action(async (cmd) => {
     initAuth(cmd);
@@ -42,6 +44,7 @@ program
   .command("browse")
   .alias("b")
   .option("-p, --profile [profile]", "AWS profile to use")
+  .option("--region [region]", "The AWS region to use. Falls back on AWS_REGION environment variable if not specified")
   .description("Browses sources and detail types and shows their consumers")
   .action(async (cmd) => {
     initAuth(cmd);
@@ -59,6 +62,7 @@ program
     "default"
   )
   .option("-p, --profile [profile]", "AWS profile to use")
+  .option("--region [region]", "The AWS region to use. Falls back on AWS_REGION environment variable if not specified")
   .description("Builds an interactive diagram over an eventbus' rules ")
   .action(async (cmd) => {
     initAuth(cmd);
@@ -87,6 +91,7 @@ program
     "template.yml"
   )
   .option("-p, --profile [profile]", "AWS profile to use")
+  .option("--region [region]", "The AWS region to use. Falls back on AWS_REGION environment variable if not specified")
   .description("Initiates local consumption of a stack's EventBridge rules")
   .action(async (cmd) => {
     initAuth(cmd);
@@ -121,6 +126,7 @@ if (process.argv.length < 3) {
 }
 function initAuth(cmd) {
   process.env.AWS_PROFILE = cmd.profile || process.env.AWS_PROFILE || "default";
+  process.env.AWS_REGION = cmd.region || process.env.AWS_REGION;
   AWS.config.credentialProvider.providers.unshift(
     new AWS.SingleSignOnCredentials()
   );

@@ -71,11 +71,10 @@ async function apiId(cloudFormationClient) {
     )[0].PhysicalResourceId;
     return apiGatewayId;
   } catch(err){
+    output = output || console;
     output.log(err.message);
-    output.log("Please make sure the evb-local backend has been deployed in your account.");
-    output.log("Visit https://serverlessrepo.aws.amazon.com/applications/eu-west-1/751354400372/evb-local and follow the instructions")
-
-    process.exit();
+    output.log("To use interactive features over websockets, please make sure the evb-local backend has been deployed in your account.");
+    output.log("Visit https://serverlessrepo.aws.amazon.com/applications/eu-west-1/751354400372/evb-local and follow the instructions")    
   }
 }
 
