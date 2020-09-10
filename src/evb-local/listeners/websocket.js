@@ -1,7 +1,7 @@
 const WebSocket = require("ws");
 const AWS = require("aws-sdk");
 
-let ws;
+let ws, output;
 function connect(url, token, stackName, compact, sam, rule, ruleArn, target, output) {
   output = output || console;
   const lambda = new AWS.Lambda({
