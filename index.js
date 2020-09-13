@@ -7,9 +7,11 @@ const templateParser = require("./src/template-parser");
 const stackListener = require("./src/evb-local/listeners/stackListener");
 const localPatternListener = require("./src/evb-local/listeners/localPatternListener");
 const arnListener = require("./src/evb-local/listeners/arnListener");
-var package = require('./package.json');
-
+const package = require('./package.json');
 require("@mhlabs/aws-sdk-sso");
+
+process.env.AWS_SDK_LOAD_CONFIG = 1;
+
 program.version(package.version, "-v, --vers", "output the current version");
 program
   .command("pattern")
