@@ -33,7 +33,7 @@ async function create(event) {
         eventBridgeClient.createTarget(
           eventConsumerName,
           localRule,
-          body.targetId,
+          localRule.Target,
           token
         )
       );
