@@ -94,13 +94,89 @@ async function injectPattern(pattern) {
     resource.value.Properties.EventPattern = pattern;
     resource.value.Properties.EventBusName = eventBus;
     template.Resources[resource.name] = resource.value;
-    fs.writeFileSync(
-      templatePath,
-      format === "json"
-        ? JSON.stringify(template, null, 2)
-        : YAML.stringify(template)
-    );
+    saveTemplate();
   }
+}
+
+function saveTemplate() {
+  fs.writeFileSync(
+    templatePath,
+    format === "json"
+      ? JSON.stringify(template, null, 2)
+      : YAML.stringify(template)
+  );
+}
+
+async function extractSamDefinition() {
+  const events = [];
+  Object.keys(template.Resources).filter(
+    (f) =>
+      template.Resources[f].Type === "AWS::Serverless::Function" &&
+      template.Resources[f].Properties.Events &&
+      Object.keys(template.Resources[f].Properties.Events).forEach((e) => {
+        if (
+          template.Resources[f].Properties.Events[e].Type ===
+            "EventBridgeRule" ||
+          template.Resources[f].Properties.Events[e].Type === "CloudWatchEvent"
+        ) {
+          events.push({
+            name: `${e} -> ${f}`,
+            value: {
+              function: f,
+              event: e,
+              config: template.Resources[f].Properties.Events[e].Properties,
+            },
+          });
+        }
+      })
+  );
+
+  const extractEvent = await inputUtil.selectFrom(
+    events,
+    "Select SAM event to extract"
+  );
+
+  delete template.Resources[extractEvent.function].Properties.Events[extractEvent.event];
+
+
+  let suggestion = `${extractEvent.event}Rule`;
+  if (template.Resources[suggestion]) {
+    suggestion = `${extractEvent.event}To${extractEvent.function}Rule`;
+  }
+  const resourceName = await inputUtil.text("Resource name", suggestion);
+
+  template.Resources[resourceName] = {
+    Type: "AWS::Events::Rule",
+    Properties: {
+      EventBusName: extractEvent.config.EventBusName || "default",
+      EventPattern: extractEvent.config.Pattern,
+      State: "ENABLED",
+      Targets: [{ 
+        Arn: { "Fn::GetAtt": [extractEvent.function, "Arn"] },
+        Id: suggestion,
+        Input: extractEvent.config.Input,
+        InputPath: extractEvent.config.InputPath
+      }],
+    },
+  };
+  template.Resources[`${resourceName}Permission`] = {
+    Type: "AWS::Lambda::Permission",
+      Properties: {
+        FunctionName: {
+          Ref: extractEvent.function
+        },
+        Action: "lambda:InvokeFunction",
+        Principal: "events.amazonaws.com",
+        SourceArn: {
+          "Fn::GetAtt": [
+            suggestion,
+            "Arn"
+          ]
+        }
+      }
+  };
+
+  saveTemplate();
 }
 
 module.exports = {
@@ -108,4 +184,5 @@ module.exports = {
   getLambdaFunctions,
   load,
   injectPattern,
+  extractSamDefinition,
 };

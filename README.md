@@ -43,6 +43,10 @@ Options:
 
 This is an experimental feature. Grouping by tag is possible for the following target types: Lambda, StepFunctions, SNS, SQS, Kinesis. More will follow.
 
+## Extract `AWS::Serverless::Function` Event to `AWS::Events::Rule`
+Sometimes you start off with a simple [EventBridgeRule](https://github.com/aws/serverless-application-model/blob/master/versions/2016-10-31.md#eventbridgerule) transform on you `AWS::Serverless::Function` resource. Later on you might want to evolve it and start using an [InputTransformer](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-events-rule-inputtransformer.html) or retry/DLQ configurations which is only supported by `AWS::Events::Rule`
+
+Use `evb extract-sam-event` to unfold the SAM event to full CloudFormation syntax.
 
 ## Local debugging
 Local debugging makes use to API Gateway V2 websockets to forward actual events in the cloud to your developer machine. The requires a [Serverless Application Repository app](https://serverlessrepo.aws.amazon.com/applications/eu-west-1/751354400372/evb-local) to be installed in your account. Note that depending on your traffic, there will be some small effect on your billing in the form of Lambda invocations, API Gateway invocations, CloudWatch Logs and DynamoDB R/W.

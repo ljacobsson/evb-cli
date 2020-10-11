@@ -55,7 +55,7 @@ program
     await patternBuilder.browseEvents(cmd.format, schemaApi, evbApi);
   });
 
-program
+  program
   .command("diagram")
   .alias("d")
   .option(
@@ -71,15 +71,25 @@ program
     await diagramBuilder.build(cmd.eventbus);
   });
 
+  program
+  .command("extract-sam-event")
+  .alias("e")
+  .option("-t, --template [template]", "Path to template file", "template.yml")
+  .description("Exctracts an EventBusRule event from an AWS::Serverless::Function resource to an AWS::Events::Rule for more advanced use cases")
+  .action(async (cmd) => {
+    templateParser.load(cmd.template);
+    await templateParser.extractSamDefinition();
+  });
+
 const ruleDefault = "choose from template";
 program
-  .command("local")
-  .alias("l")
-  .option(
-    "-s, --stack-name [stackName]",
-    "Establishes local consumption of all rules in a stack"
-  )
-  .option("--arn [arn]", "Establishes local consumption of a rule ARN")
+.command("local")
+.alias("l")
+.option(
+  "-s, --stack-name [stackName]",
+  "Establishes local consumption of all rules in a stack"
+)
+.option("--arn [arn]", "Establishes local consumption of a rule ARN")
   .option(
     "-r, --rule [rule]",
     "Establishes local consumption of a rule in a local CloudFormation template",
