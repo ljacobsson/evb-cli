@@ -43,7 +43,7 @@ Options:
 
 This is an experimental feature. Grouping by tag is possible for the following target types: Lambda, StepFunctions, SNS, SQS, Kinesis. More will follow.
 
-## Extract `AWS::Serverless::Function` Event to `AWS::Events::Rule`
+### Extract `AWS::Serverless::Function` Event to `AWS::Events::Rule`
 Sometimes you start off with a simple [EventBridgeRule](https://github.com/aws/serverless-application-model/blob/master/versions/2016-10-31.md#eventbridgerule) transform on you `AWS::Serverless::Function` resource. Later on you might want to evolve it and start using an [InputTransformer](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-events-rule-inputtransformer.html) or retry/DLQ configurations which is only supported by `AWS::Events::Rule`
 
 Use `evb extract-sam-event` to unfold the SAM event to full CloudFormation syntax.
