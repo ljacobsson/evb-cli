@@ -1,5 +1,8 @@
 # evb-cli
-Pattern generator for CloudWatch Events / EventBridge
+Pattern generator and debugging tool for EventBridge
+
+## Installation
+`npm install -g @mhlabs/evb-cli`
 
 ## Usage
 
