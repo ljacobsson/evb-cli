@@ -86,7 +86,7 @@ program
   .command("test-event")
   .alias("t")
   .option("-e, --event-input-file [event-file]", "Path to test event", "event.json")
-  .option("-n, --name-prefix [name-prefix]", "Name prefix for rules")
+  .option("-n, --name-prefix [name-prefix]", "Name prefix for rules to test against fewer rules")
   .option("-b, --eventbus [eventbus]", "The eventbus to test against", "default")
   .option("-a, --all", "Show all rules, even unmatched ones", false)
   .description("Tests an event payload against exisiting rules on a bus")
