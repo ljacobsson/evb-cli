@@ -89,7 +89,7 @@ program
   .option("-n, --name-prefix [name-prefix]", "Name prefix for rules to test against fewer rules")
   .option("-b, --eventbus [eventbus]", "The eventbus to test against", "default")
   .option("-a, --all", "Show all rules, even unmatched ones", false)
-  .description("Tests an event payload against exisiting rules on a bus")
+  .description("Tests an event payload against existing rules on a bus")
   .action(async (cmd) => {
     initAuth(cmd);
     await eventTester.testEvent(cmd.eventInputFile, cmd.namePrefix, cmd.eventbus, cmd.all);
@@ -140,7 +140,7 @@ program
     }
   });
 if (process.argv.length > 2) {
-  // Renamed graph to diagram to be semantically correct. This is for backward compatability
+  // Renamed graph to diagram to be semantically correct. This is for backward compatibility
   if (process.argv[2] === "graph" || process.argv[2] === "g") {
     process.argv[2] = "diagram";
   }
