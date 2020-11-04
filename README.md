@@ -55,7 +55,7 @@ Use `evb extract-sam-event` to unfold the SAM event to full CloudFormation synta
 ```
 Usage: evb test-event|t [options]
 
-Tests an event payload against exisiting rules on a bus
+Tests an event payload against existing rules on a bus
 
 Options:
   -e, --event-input-file [event-file]  Path to test event (default: "event.json")
