@@ -59,7 +59,7 @@ Tests an event payload against exisiting rules on a bus
 
 Options:
   -e, --event-input-file [event-file]  Path to test event (default: "event.json")
-  -n, --name-prefix [name-prefix]      Name prefix for rules
+  -n, --name-prefix [name-prefix]      Name prefix for rules; helpful to narrow against one or a few rules only
   -b, --eventbus [eventbus]            The eventbus to test against (default: "default")
   -a, --all                            Show all rules, even unmatched ones (default: false)
 ```
