@@ -51,6 +51,20 @@ Sometimes you start off with a simple [EventBridgeRule](https://github.com/aws/s
 
 Use `evb extract-sam-event` to unfold the SAM event to full CloudFormation syntax.
 
+### Test event payload against all rules on a bus
+```
+Usage: evb test-event|t [options]
+
+Tests an event payload against exisiting rules on a bus
+
+Options:
+  -e, --event-input-file [event-file]  Path to test event (default: "event.json")
+  -n, --name-prefix [name-prefix]      Name prefix for rules
+  -b, --eventbus [eventbus]            The eventbus to test against (default: "default")
+  -a, --all                            Show all rules, even unmatched ones (default: false)
+```
+Example event input can be found [here](tests/test-event.json)
+
 ## Local debugging
 Local debugging makes use to API Gateway V2 websockets to forward actual events in the cloud to your developer machine. The requires a [Serverless Application Repository app](https://serverlessrepo.aws.amazon.com/applications/eu-west-1/751354400372/evb-local) to be installed in your account. Note that depending on your traffic, there will be some small effect on your billing in the form of Lambda invocations, API Gateway invocations, CloudWatch Logs and DynamoDB R/W.
 

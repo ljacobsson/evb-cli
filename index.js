@@ -8,6 +8,7 @@ const stackListener = require("./src/evb-local/listeners/stackListener");
 const localPatternListener = require("./src/evb-local/listeners/localPatternListener");
 const arnListener = require("./src/evb-local/listeners/arnListener");
 const package = require('./package.json');
+const eventTester = require("./src/event-tester");
 require("@mhlabs/aws-sdk-sso");
 
 process.env.AWS_SDK_LOAD_CONFIG = 1;
@@ -75,10 +76,23 @@ program
   .command("extract-sam-event")
   .alias("e")
   .option("-t, --template [template]", "Path to template file", "template.yml")
-  .description("Exctracts an EventBusRule event from an AWS::Serverless::Function resource to an AWS::Events::Rule for more advanced use cases")
+  .description("Extracts an EventBusRule event from an AWS::Serverless::Function resource to an AWS::Events::Rule for more advanced use cases")
   .action(async (cmd) => {
     templateParser.load(cmd.template);
     await templateParser.extractSamDefinition();
+  });
+
+  program
+  .command("test-event")
+  .alias("t")
+  .option("-e, --event-input-file [event-file]", "Path to test event", "event.json")
+  .option("-n, --name-prefix [name-prefix]", "Name prefix for rules")
+  .option("-b, --eventbus [eventbus]", "The eventbus to test against", "default")
+  .option("-a, --all", "Show all rules, even unmatched ones", false)
+  .description("Tests an event payload against exisiting rules on a bus")
+  .action(async (cmd) => {
+    initAuth(cmd);
+    await eventTester.testEvent(cmd.eventInputFile, cmd.namePrefix, cmd.eventbus, cmd.all);
   });
 
 const ruleDefault = "choose from template";

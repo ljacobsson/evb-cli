@@ -1,4 +1,4 @@
-const patternBuilder = require("./src/pattern-builder");
+const patternBuilder = require("../src/pattern-builder");
 
 test("Init is creates a valid object", () => {
   const value = patternBuilder.init("a", "b");
