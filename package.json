@@ -30,7 +30,8 @@
   },
   "homepage": "https://github.com/mhlabs/evb-cli#readme",
   "devDependencies": {
-    "jest": "^25.1.0"
+    "jest": "^25.1.0",
+    "window-size": "^1.1.1"
   },
   "bin": {
     "evb": "index.js"
