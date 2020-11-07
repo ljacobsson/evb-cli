@@ -24,8 +24,7 @@
     "prompt-skeleton": "^1.0.2",
     "temp-dir": "^2.0.0",
     "ws": "^7.3.1",
-    "yaml-cfn": "^0.2.3",
-    "window-size": "^1.1.1"
+    "yaml-cfn": "^0.2.3"
   },
   "bugs": {
     "url": "https://github.com/mhlabs/evb-cli/issues"
