@@ -9,6 +9,7 @@ const localPatternListener = require("./src/evb-local/listeners/localPatternList
 const arnListener = require("./src/evb-local/listeners/arnListener");
 const package = require('./package.json');
 const eventTester = require("./src/event-tester");
+const replayBuilder = require("./src/replay-builder");
 require("@mhlabs/aws-sdk-sso");
 
 process.env.AWS_SDK_LOAD_CONFIG = 1;
@@ -93,6 +94,17 @@ program
   .action(async (cmd) => {
     initAuth(cmd);
     await eventTester.testEvent(cmd.eventInputFile, cmd.namePrefix, cmd.eventbus, cmd.all);
+  });
+
+  program
+  .command("replay")
+  .alias("r")
+  .option("-b, --eventbus [eventbus]", "The eventbus the archive is stored against", "default")
+  .option("-r, --rule-prefix [rulePrefix]", "Rule name prefix")
+  .description("Starts a replay of events against a specific destination")
+  .action(async (cmd) => {
+    initAuth(cmd);
+    await replayBuilder.replay(cmd.eventbus, cmd.rulePrefix);
   });
 
 const ruleDefault = "choose from template";

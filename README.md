@@ -65,6 +65,17 @@ Options:
 ```
 Example event input can be found [here](tests/test-event.json) 
 
+## Replay events
+```
+Usage: evb replay|r [options]
+
+Tests an event payload against existing rules on a bus
+
+Options:
+  -b, --eventbus [eventbus]       The eventbus the archive is stored against (default: "default")
+  -r, --rule-prefix [rulePrefix]  Rule name prefix
+```
+
 ## Local debugging
 Local debugging makes use to API Gateway V2 websockets to forward actual events in the cloud to your developer machine. The requires a [Serverless Application Repository app](https://serverlessrepo.aws.amazon.com/applications/eu-west-1/751354400372/evb-local) to be installed in your account. Note that depending on your traffic, there will be some small effect on your billing in the form of Lambda invocations, API Gateway invocations, CloudWatch Logs and DynamoDB R/W.
 

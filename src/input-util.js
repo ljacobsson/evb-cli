@@ -1,5 +1,7 @@
 const inquirer = require("inquirer");
 const prompt = inquirer.createPromptModule();
+const datePrompt = require('date-prompt')
+
 const BACK = "↩ back";
 const UNDO = "⎌ undo";
 const DONE = "✔ done";
@@ -168,6 +170,16 @@ async function selectFrom(list, message, skipBack) {
   return answer.id;
 }
 
+async function multiSelectFrom(list, message, skipBack) {
+  const answer = await prompt({
+    name: "id",
+    type: "checkbox",
+    message: message || "Please select",
+    choices: [!skipBack ? BACK : null, ...list].filter((p) => p),
+  });
+  return answer.id;
+}
+
 async function getEventBusName(eventbridge) {
   const eventBusesResponse = await eventbridge.listEventBuses().promise();
   const eventBuses = [
@@ -195,15 +207,22 @@ async function getPropertyValue(chosenProp, property) {
   return answer;
 }
 
+async function getDate(message) {
+  const answer = await datePrompt(message);
+  return answer;
+}
+
 module.exports = {
   getEventBusName,
   getRegistry,
   getSourceName,
   getDetailTypeName,
   selectFrom,
+  multiSelectFrom,
   getProperty,
   getPropertyValue,
   text,
+  getDate,
   BACK,
   DONE,
   UNDO,
