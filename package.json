@@ -21,17 +21,18 @@
     "inquirer": "^7.0.4",
     "json-to-pretty-yaml": "^1.2.2",
     "open": "^7.2.0",
+    "prompt-skeleton": "^1.0.2",
     "temp-dir": "^2.0.0",
     "ws": "^7.3.1",
-    "yaml-cfn": "^0.2.3"
+    "yaml-cfn": "^0.2.3",
+    "window-size": "^1.1.1"
   },
   "bugs": {
     "url": "https://github.com/mhlabs/evb-cli/issues"
   },
   "homepage": "https://github.com/mhlabs/evb-cli#readme",
   "devDependencies": {
-    "jest": "^25.1.0",
-    "window-size": "^1.1.1"
+    "jest": "^25.1.0"
   },
   "bin": {
     "evb": "index.js"
