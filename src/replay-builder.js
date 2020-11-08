@@ -1,8 +1,8 @@
 const AWS = require("aws-sdk");
-const eventBridge = new AWS.EventBridge();
-const sts = new AWS.STS();
 const inputUtil = require("./input-util");
 async function replay(eventbus, rulePrefix) {
+  const eventBridge = new AWS.EventBridge();
+  const sts = new AWS.STS();
   const caller = await sts.getCallerIdentity().promise();
   const busArn = `arn:aws:events:${AWS.config.region}:${caller.Account}:event-bus/${eventbus}`;
   const archives = await eventBridge

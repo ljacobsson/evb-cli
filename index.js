@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+process.env.AWS_SDK_LOAD_CONFIG = 1;
+
 const patternBuilder = require("./src/pattern-builder");
 const diagramBuilder = require("./src/diagram-builder");
 const AWS = require("aws-sdk");
@@ -11,8 +13,6 @@ const package = require('./package.json');
 const eventTester = require("./src/event-tester");
 const replayBuilder = require("./src/replay-builder");
 require("@mhlabs/aws-sdk-sso");
-
-process.env.AWS_SDK_LOAD_CONFIG = 1;
 
 program.version(package.version, "-v, --vers", "output the current version");
 program
