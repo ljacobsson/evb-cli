@@ -12,6 +12,7 @@ const arnListener = require("./src/evb-local/listeners/arnListener");
 const package = require('./package.json');
 const eventTester = require("./src/event-tester");
 const archiveUtil = require("./src/archive-util");
+const inputUtil = require("./src/input-util");
 require("@mhlabs/aws-sdk-sso");
 
 program.version(package.version, "-v, --vers", "output the current version");
@@ -20,7 +21,7 @@ program
   .alias("p")
   .option("-f, --format <json|yaml>", "Select output format", "json")
   .option("-p, --profile [profile]", "AWS profile to use")
-  .option("-t, --template [template]", "Path to template file", "template.yml")
+  .option("-t, --template [template]", "Path to template file", "template.yaml")
   .option("--region [region]", "The AWS region to use. Falls back on AWS_REGION environment variable if not specified")
   .description("Starts an EventBridge pattern builder")
   .action(async (cmd) => {
@@ -76,7 +77,7 @@ program
   program
   .command("extract-sam-event")
   .alias("e")
-  .option("-t, --template [template]", "Path to template file", "template.yml")
+  .option("-t, --template [template]", "Path to template file", "template.yaml")
   .description("Extracts an EventBusRule event from an AWS::Serverless::Function resource to an AWS::Events::Rule for more advanced use cases")
   .action(async (cmd) => {
     templateParser.load(cmd.template);
@@ -109,18 +110,6 @@ program
     await archiveUtil.replay(cmd.eventbus, cmd.rulePrefix);
   });
 
-  program
-  .command("insights")
-  .alias("in")
-  .option("-b, --eventbus [eventbus]", "The eventbus the archive is stored against", "default")
-  .option("-p, --profile [profile]", "AWS profile to use")
-  .option("--region [region]", "The AWS region to use. Falls back on AWS_REGION environment variable if not specified")
-  .description("Starts an interactive insights browser for events in a specific archive and timerange")
-  .action(async (cmd) => {
-    initAuth(cmd);
-    await archiveUtil.insights(cmd.eventbus, cmd.rulePrefix);
-  });
-
 const ruleDefault = "choose from template";
 program
 .command("local")
@@ -140,13 +129,22 @@ program
   .option(
     "-t, --template-file [sam]",
     "Path to template file. Only used together with --rule option",
-    "template.yml"
+    "template.yaml"
   )
   .option("-p, --profile [profile]", "AWS profile to use")
   .option("--region [region]", "The AWS region to use. Falls back on AWS_REGION environment variable if not specified")
+  .option("--replay", "Presents a UI for selecting archive and time range to replay")
   .description("Initiates local consumption of a stack's EventBridge rules")
   .action(async (cmd) => {
     initAuth(cmd);
+    let replayConfig;
+    if(cmd.replay) {
+      const eventbus = await inputUtil.getEventBusName(new AWS.EventBridge());
+      replayConfig = await archiveUtil.getReplayConfig(eventbus);
+      replayConfig.EventBusName = eventbus;
+    }
+
+
     if (cmd.stackName) {
       await stackListener.init(cmd.stackName, cmd.compact, cmd.samLocal);
       return;
@@ -160,7 +158,8 @@ program
         cmd.rule === ruleDefault ? null : cmd.rule,
         cmd.templateFile,
         cmd.compact,
-        cmd.samLocal
+        cmd.samLocal,
+        replayConfig
       );
       return;
     }

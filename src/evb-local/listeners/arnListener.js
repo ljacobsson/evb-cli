@@ -2,7 +2,7 @@ const { v4: uuidv4 } = require('uuid');
 const websocket = require('./websocket');
 let output = console;
 
-async function initArnListener(arn, target, compact, sam, replayName, func) {
+async function initArnListener(arn, target, compact, sam, replaySettings, func) {
   const token = uuidv4();
   const apiId = await websocket.apiId();
   websocket.connect(
@@ -15,7 +15,7 @@ async function initArnListener(arn, target, compact, sam, replayName, func) {
     arn,
     target,
     null,
-    replayName,
+    replaySettings,
     func
   );
   console.log('Connecting...');

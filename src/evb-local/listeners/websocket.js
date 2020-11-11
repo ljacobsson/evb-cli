@@ -12,7 +12,7 @@ function connect(
   ruleArn,
   target,
   output,
-  replayName,
+  replaySettings,
   func //TODO: make all args into options object
 ) {
   output = output || console;
@@ -30,7 +30,7 @@ function connect(
       localRule: rule,
       ruleArn: ruleArn,
       target: target,
-      replayName: replayName
+      replaySettings,
     });
     ws.send(payload, (err) => {
       if (err) {
@@ -58,24 +58,27 @@ function connect(
         return ws;
       }
 
-      if (compact) {
-        output.log(JSON.stringify(presentationObject));
-      } else {
-        output.log(JSON.stringify(presentationObject, null, 2));
-      }
-      if (sam) {
-        try {
-          await lambda
-            .invoke({
-              FunctionName: obj.Target,
-              Payload: JSON.stringify(obj.Body),
-            })
-            .promise();
-        } catch (err) {
-          output.log(err);
+      if (presentationObject) {
+        if (compact) {
+          output.log(JSON.stringify(presentationObject));
+        } else {
+          output.log(JSON.stringify(presentationObject, null, 2));
+        }
+
+        if (sam) {
+          try {
+            await lambda
+              .invoke({
+                FunctionName: obj.Target,
+                Payload: JSON.stringify(obj.Body),
+              })
+              .promise();
+          } catch (err) {
+            output.log(err);
+          }
         }
       }
-    } catch(err) {
+    } catch (err) {
       output.log(err, data);
     }
   });

@@ -12,7 +12,7 @@ Metadata:
     ReadmeUrl: README.md
     Labels: ['eventbridge', 'evb-cli', 'debugging']
     HomePageUrl: https://github.com/mhlabs/evb-cli#readme
-    SemanticVersion: 0.0.5
+    SemanticVersion: 0.0.6
     SourceCodeUrl: https://github.com/mhlabs/evb-cli
 Resources:
   OnConnectFunction:
@@ -117,6 +117,7 @@ Resources:
           - events:ListTargetsByRule
           - events:PutRule
           - events:PutTargets
+          - events:StartReplay
           Resource:
           - "*"
       - Version: '2012-10-17'
