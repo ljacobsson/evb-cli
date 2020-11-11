@@ -8,6 +8,7 @@ const apigateway = new AWS.ApiGatewayManagementApi({
 });
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
+const eventBridge = new AWS.EventBridge();
 
 async function handler(event, context) {
   console.log(event);
@@ -15,6 +16,7 @@ async function handler(event, context) {
   const token = body.token;
   const localRule = body.localRule;
   const ruleArn = body.ruleArn;
+  const replaySettings = body.replaySettings;
   console.log("Rulearn", ruleArn);
   let ruleNames;
   if (localRule) {
@@ -47,9 +49,25 @@ async function handler(event, context) {
   await apigateway
     .postToConnection({
       ConnectionId: event.requestContext.connectionId,
-      Data: "Connected!",
+      Data: JSON.stringify({
+        Status:
+          "Connected!" +
+          (replaySettings
+            ? `\n\nReplay starting. This can take a few minutes. You can follow the progress here: https://${process.env.AWS_REGION}.console.aws.amazon.com/events/home?region=${process.env.AWS_REGION}#/replay/${replaySettings.ReplayName}`
+            : ""),
+        Rules: ruleNames,
+        EvbLocalRegistration: true,
+      }),
     })
     .promise();
+  if (replaySettings) {
+    replaySettings.Destination.FilterArns = ruleNames.map(
+      (p) =>
+        `arn:aws:events:${process.env.AWS_REGION}:${process.env.AccountId}:rule/${replaySettings.EventBusName}/${p}`
+    );
+    delete replaySettings.EventBusName;
+    const resp = await eventBridge.startReplay(replaySettings).promise();
+  }
 
   return { statusCode: 200 };
 }

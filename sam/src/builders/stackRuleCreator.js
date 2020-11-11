@@ -26,6 +26,10 @@ async function create(event) {
         .promise();
       const newRuleName = eventBridgeClient.getRuleName(busName);
       ruleNames.push(newRuleName);
+      if (body.replayName) {
+        ruleResponse.EventPattern["replay-name"] =
+          body.replaySettings.ReplayName;
+      }
       await eventBridgeClient.putRule(busName, ruleResponse, newRuleName);
       const targets = [];
       for (const target of ruleTargets.Targets) {

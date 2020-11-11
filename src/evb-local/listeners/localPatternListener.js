@@ -40,7 +40,13 @@ function findAllKeys(obj, keyArray) {
   }
 }
 
-async function initLocalPatternListener(ruleName, templateFile, compact, sam) {
+async function initLocalPatternListener(
+  ruleName,
+  templateFile,
+  compact,
+  sam,
+  replaySettings
+) {
   let templateString = "";
   try {
     templateString = fs.readFileSync(templateFile);
@@ -57,8 +63,8 @@ async function initLocalPatternListener(ruleName, templateFile, compact, sam) {
   let rules = [];
   for (const resourceKey of Object.keys(template.Resources)) {
     const resource = template.Resources[resourceKey];
-    templateParser.handleSAMFunction(resource, rules, resourceKey);
-    templateParser.handleEventsRule(resource, rules, resourceKey);
+    templateParser.handleSAMFunction(resource, rules, resourceKey, replaySettings);
+    templateParser.handleEventsRule(resource, rules, resourceKey, replaySettings);
     rules = rules.sort((a, b) => a.Name > b.Name);
   }
   if (ruleName) {
@@ -74,10 +80,18 @@ async function initLocalPatternListener(ruleName, templateFile, compact, sam) {
     });
     rule = ruleResponse.rule;
   }
-  await initConnection(rule, ruleName, compact, sam);
+  await initConnection(rule, ruleName, compact, sam, null, null, replaySettings);
 }
 
-async function initConnection(rule, ruleName, compact, sam, cloudFormationClient, output) {
+async function initConnection(
+  rule,
+  ruleName,
+  compact,
+  sam,
+  cloudFormationClient,
+  output,
+  replaySettings
+) {
   output = output || console;
   const keyArray = [];
   if (typeof rule.EventPattern === "object") {
@@ -97,7 +111,7 @@ async function initConnection(rule, ruleName, compact, sam, cloudFormationClient
 
   const token = uuidv4();
   websocket.connect(
-    `wss://${await websocket.apiId(cloudFormationClient)}.execute-api.${
+    `wss://${await websocket.apiId()}.execute-api.${
       process.env.AWS_REGION
     }.amazonaws.com/Prod`,
     token,
@@ -107,7 +121,8 @@ async function initConnection(rule, ruleName, compact, sam, cloudFormationClient
     rule,
     null,
     null,
-    output
+    output,
+    replaySettings
   );
   output.log("Connecting...");
 }

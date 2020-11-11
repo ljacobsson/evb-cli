@@ -115,5 +115,8 @@ If the rule's logical ID is omitted such as `evb local --rule` the tool will par
 *Use cases*: 
 * You want to test the behaviour of an already deployed rule where you don't know the stack's name or where it doesn't belong to a stack.
 
+## Replaying archived events
+Add `--replay` option to command. This will guide you through a wizard to find the archive and set the time range to replay.
+
 ## Forward events to sam-local
 All `evb local` commands support a `--sam-local` flag. When used, events will be passed on to sam-local for more advanced debugging

@@ -11,7 +11,8 @@ const localPatternListener = require("./src/evb-local/listeners/localPatternList
 const arnListener = require("./src/evb-local/listeners/arnListener");
 const package = require('./package.json');
 const eventTester = require("./src/event-tester");
-const replayBuilder = require("./src/replay-builder");
+const archiveUtil = require("./src/archive-util");
+const inputUtil = require("./src/input-util");
 require("@mhlabs/aws-sdk-sso");
 
 program.version(package.version, "-v, --vers", "output the current version");
@@ -106,7 +107,7 @@ program
   .description("Starts a replay of events against a specific destination")
   .action(async (cmd) => {
     initAuth(cmd);
-    await replayBuilder.replay(cmd.eventbus, cmd.rulePrefix);
+    await archiveUtil.replay(cmd.eventbus, cmd.rulePrefix);
   });
 
 const ruleDefault = "choose from template";
@@ -132,9 +133,18 @@ program
   )
   .option("-p, --profile [profile]", "AWS profile to use")
   .option("--region [region]", "The AWS region to use. Falls back on AWS_REGION environment variable if not specified")
+  .option("--replay", "Presents a UI for selecting archive and time range to replay")
   .description("Initiates local consumption of a stack's EventBridge rules")
   .action(async (cmd) => {
     initAuth(cmd);
+    let replayConfig;
+    if(cmd.replay) {
+      const eventbus = await inputUtil.getEventBusName(new AWS.EventBridge());
+      replayConfig = await archiveUtil.getReplayConfig(eventbus);
+      replayConfig.EventBusName = eventbus;
+    }
+
+
     if (cmd.stackName) {
       await stackListener.init(cmd.stackName, cmd.compact, cmd.samLocal);
       return;
@@ -148,7 +158,8 @@ program
         cmd.rule === ruleDefault ? null : cmd.rule,
         cmd.templateFile,
         cmd.compact,
-        cmd.samLocal
+        cmd.samLocal,
+        replayConfig
       );
       return;
     }
