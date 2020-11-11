@@ -11,7 +11,7 @@ const localPatternListener = require("./src/evb-local/listeners/localPatternList
 const arnListener = require("./src/evb-local/listeners/arnListener");
 const package = require('./package.json');
 const eventTester = require("./src/event-tester");
-const replayBuilder = require("./src/replay-builder");
+const archiveUtil = require("./src/archive-util");
 require("@mhlabs/aws-sdk-sso");
 
 program.version(package.version, "-v, --vers", "output the current version");
@@ -106,7 +106,19 @@ program
   .description("Starts a replay of events against a specific destination")
   .action(async (cmd) => {
     initAuth(cmd);
-    await replayBuilder.replay(cmd.eventbus, cmd.rulePrefix);
+    await archiveUtil.replay(cmd.eventbus, cmd.rulePrefix);
+  });
+
+  program
+  .command("insights")
+  .alias("in")
+  .option("-b, --eventbus [eventbus]", "The eventbus the archive is stored against", "default")
+  .option("-p, --profile [profile]", "AWS profile to use")
+  .option("--region [region]", "The AWS region to use. Falls back on AWS_REGION environment variable if not specified")
+  .description("Starts an interactive insights browser for events in a specific archive and timerange")
+  .action(async (cmd) => {
+    initAuth(cmd);
+    await archiveUtil.insights(cmd.eventbus, cmd.rulePrefix);
   });
 
 const ruleDefault = "choose from template";

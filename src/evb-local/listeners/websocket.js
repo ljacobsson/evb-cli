@@ -2,7 +2,19 @@ const WebSocket = require("ws");
 const AWS = require("aws-sdk");
 
 let ws, output;
-function connect(url, token, stackName, compact, sam, rule, ruleArn, target, output) {
+function connect(
+  url,
+  token,
+  stackName,
+  compact,
+  sam,
+  rule,
+  ruleArn,
+  target,
+  output,
+  replayName,
+  func //TODO: make all args into options object
+) {
   output = output || console;
   const lambda = new AWS.Lambda({
     endpoint: "http://127.0.0.1:3001/",
@@ -18,6 +30,7 @@ function connect(url, token, stackName, compact, sam, rule, ruleArn, target, out
       localRule: rule,
       ruleArn: ruleArn,
       target: target,
+      replayName: replayName
     });
     ws.send(payload, (err) => {
       if (err) {
@@ -29,12 +42,22 @@ function connect(url, token, stackName, compact, sam, rule, ruleArn, target, out
   ws.on("message", async function incoming(data) {
     try {
       const obj = JSON.parse(data);
-      delete obj.Token;
+      if (obj.EvbLocalRegistration) {
+        console.log(obj.Status);
+      } else {
+        delete obj.Token;
+      }
 
       let presentationObject = obj;
       if (rule) {
         presentationObject = obj.Body;
       }
+
+      if (func) {
+        func(obj);
+        return ws;
+      }
+
       if (compact) {
         output.log(JSON.stringify(presentationObject));
       } else {
@@ -52,8 +75,8 @@ function connect(url, token, stackName, compact, sam, rule, ruleArn, target, out
           output.log(err);
         }
       }
-    } catch {
-      output.log(data);
+    } catch(err) {
+      output.log(err, data);
     }
   });
 
@@ -70,23 +93,26 @@ async function apiId(cloudFormationClient) {
       (p) => p.LogicalResourceId === "WebSocket"
     )[0].PhysicalResourceId;
     return apiGatewayId;
-  } catch(err){
+  } catch (err) {
     output = output || console;
     output.log(err.message);
-    output.log("To use interactive features over websockets, please make sure the evb-local backend has been deployed in your account.");
-    output.log("Visit https://serverlessrepo.aws.amazon.com/applications/eu-west-1/751354400372/evb-local and follow the instructions")    
+    output.log(
+      "To use interactive features over websockets, please make sure the evb-local backend has been deployed in your account."
+    );
+    output.log(
+      "Visit https://serverlessrepo.aws.amazon.com/applications/eu-west-1/751354400372/evb-local and follow the instructions"
+    );
   }
 }
 
 async function apiUrl() {
   return `wss://${await apiId()}.execute-api.${
     process.env.AWS_REGION
-  }.amazonaws.com/Prod`
+  }.amazonaws.com/Prod`;
 }
 
 function disconnect() {
-  if (ws)
-    ws.close();
+  if (ws) ws.close();
 }
 
 module.exports = {

@@ -47,7 +47,11 @@ async function handler(event, context) {
   await apigateway
     .postToConnection({
       ConnectionId: event.requestContext.connectionId,
-      Data: "Connected!",
+      Data: JSON.stringify({
+        Status: "Connected!",
+        Rules: ruleNames,
+        EvbLocalRegistration: true,
+      }),
     })
     .promise();
 
