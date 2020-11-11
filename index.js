@@ -20,7 +20,7 @@ program
   .alias("p")
   .option("-f, --format <json|yaml>", "Select output format", "json")
   .option("-p, --profile [profile]", "AWS profile to use")
-  .option("-t, --template [template]", "Path to template file", "template.yml")
+  .option("-t, --template [template]", "Path to template file", "template.yaml")
   .option("--region [region]", "The AWS region to use. Falls back on AWS_REGION environment variable if not specified")
   .description("Starts an EventBridge pattern builder")
   .action(async (cmd) => {
@@ -76,7 +76,7 @@ program
   program
   .command("extract-sam-event")
   .alias("e")
-  .option("-t, --template [template]", "Path to template file", "template.yml")
+  .option("-t, --template [template]", "Path to template file", "template.yaml")
   .description("Extracts an EventBusRule event from an AWS::Serverless::Function resource to an AWS::Events::Rule for more advanced use cases")
   .action(async (cmd) => {
     templateParser.load(cmd.template);
@@ -128,7 +128,7 @@ program
   .option(
     "-t, --template-file [sam]",
     "Path to template file. Only used together with --rule option",
-    "template.yml"
+    "template.yaml"
   )
   .option("-p, --profile [profile]", "AWS profile to use")
   .option("--region [region]", "The AWS region to use. Falls back on AWS_REGION environment variable if not specified")
