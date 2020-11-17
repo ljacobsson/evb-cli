@@ -13,7 +13,7 @@ Pattern generator and debugging tool for EventBridge
 
 For AWS events, such as `aws.codepipeline` it's already enabled, but for custom events you will have to enable it in the AWS Management Console.
 
-![Demo](demo.gif)
+![Demo](images/demo.gif)
 
 ### To generate an EventBridge InputTransformer object:
 [Input transformers](https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-input-transformer-tutorial.html) are useful when you only want a small portion of the event sent to your target. This command helps you navigate the JSON payload and generate the [InputTransformer CloudFormation object](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-events-rule-inputtransformer.html)
@@ -22,14 +22,14 @@ For AWS events, such as `aws.codepipeline` it's already enabled, but for custom 
 
 `evb input --format <yaml|json>` - Output format. Default is `json`
 
-![Demo](demo-input.gif)
+![Demo](images/demo-input.gif)
 
 ### To browse targets of events:
 Select a schema from the schema registry and list its targets. Select a target to browse details such as ARN, event pattern, input transformation, etc.
 
 `evb browse` will let you browse your schemas and get insights into the targets listening to the source/detail-type combination of your event. This only works with explicit matching on `source` and `detail-type`.
 
-![Demo](demo-browse.gif)
+![Demo](images/demo-browse.gif)
 
 ### To generate an interactive diagram over the event rules of an eventbus
 ```
@@ -42,7 +42,7 @@ Options:
   -p, --profile [profile]    AWS profile to use
   -h, --help                 output usage information
 ```
-![Demo](demo-diagram.gif)
+![Demo](images/demo-diagram.gif)
 
 This is an experimental feature. Grouping by tag is possible for the following target types: Lambda, StepFunctions, SNS, SQS, Kinesis. More will follow.
 
@@ -79,7 +79,7 @@ Options:
 ## Local debugging
 Local debugging makes use to API Gateway V2 websockets to forward actual events in the cloud to your developer machine. The requires a [Serverless Application Repository app](https://serverlessrepo.aws.amazon.com/applications/eu-west-1/751354400372/evb-local) to be installed in your account. Note that depending on your traffic, there will be some small effect on your billing in the form of Lambda invocations, API Gateway invocations, CloudWatch Logs and DynamoDB R/W.
 
-![Demo](demo-local.gif)
+![Demo](images/demo-local.gif)
 
 Example of testing a rule before deploying the stack. The user quickly gets feedback on their patterns and input transforms. In this example we're listening to all aws.* events and transforming the output to 
 ```
