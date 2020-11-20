@@ -69,12 +69,30 @@ Example event input can be found [here](tests/test-event.json)
 ```
 Usage: evb replay|r [options]
 
-Tests an event payload against existing rules on a bus
+Starts a replay of events against a specific destination
 
 Options:
   -b, --eventbus [eventbus]       The eventbus the archive is stored against (default: "default")
   -r, --rule-prefix [rulePrefix]  Rule name prefix
+  -p, --profile [profile]         AWS profile to use
+  -s, --replay-speed [speed]      The speed of the replay in % where 0 == all at once and 100 == real time speed
+  -n, --replay-name [name]        The replay name (default: "evb-cli-replay-1605913422337")
+  --region [region]               The AWS region to use. Falls back on AWS_REGION environment variable if not specified
+  -h, --help                      output usage information
 ```
+
+### Paced replays
+Evb-cli provides support for paced replay delivery where you can pass a replay speed scalar between 0 and 100 where 0 is as fast as possible (native EventBridge way) and 100 is real time speed where a one hour replay takes one hour. Passing `--replay-speed 10` to a one hour replay will shrink the replay speed to 6 minutes, but will still retain the same order and a scaled delay betwene messages.
+
+Currently EventBridge will run your replay at the fastest possible speed. Due to the unordered nature of EventBridge, this means there's an icreased likelyhood that your events will be delivered more randomly during a replay than when live.
+
+Your EventBridge targets should always be idempotent, but for debugging purposes you might want the likely order of event. 
+
+For example, you might replay 5 hours of `order` events and want to expect each order to transition from `OPEN` to `CONFIRMED` to `DELIVERED` in the logical order. If you run a default replay it's likely that these events will be delivered in the wrong order.
+
+### Caveats
+* At delivery, the `replay-name` field will be stripped. 
+* Step Functions is used to pace the replay. EventBridge will consider the replay a success as long as the events were delivered to Step Functions.
 
 ## Local debugging
 Local debugging makes use to API Gateway V2 websockets to forward actual events in the cloud to your developer machine. The requires a [Serverless Application Repository app](https://serverlessrepo.aws.amazon.com/applications/eu-west-1/751354400372/evb-local) to be installed in your account. Note that depending on your traffic, there will be some small effect on your billing in the form of Lambda invocations, API Gateway invocations, CloudWatch Logs and DynamoDB R/W.
