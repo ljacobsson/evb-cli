@@ -82,6 +82,8 @@ Options:
 ```
 
 ### Paced replays
+** Requires [evb local](#local-debugging) > v0.0.7 **
+
 Evb-cli provides support for paced replay delivery where you can pass a replay speed scalar between 0 and 100 where 0 is as fast as possible (native EventBridge way) and 100 is real time speed where a one hour replay takes one hour. Passing `--replay-speed 10` to a one hour replay will shrink the replay speed to 6 minutes, but will still retain the same order and a scaled delay betwene messages.
 
 Currently EventBridge will run your replay at the fastest possible speed. Due to the unordered nature of EventBridge, this means there's an icreased likelyhood that your events will be delivered more randomly during a replay than when live.
