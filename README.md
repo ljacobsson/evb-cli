@@ -82,9 +82,9 @@ Options:
 ```
 
 ### Paced replays
-** Requires [evb local](#local-debugging) > v0.0.7 **
+** Requires [evb local](#local-debugging) >= v0.0.7 **
 
-Evb-cli provides support for paced replay delivery where you can pass a replay speed scalar between 0 and 100 where 0 is as fast as possible (native EventBridge way) and 100 is real time speed where a one hour replay takes one hour. Passing `--replay-speed 10` to a one hour replay will shrink the replay speed to 6 minutes, but will still retain the same order and a scaled delay between messages.
+Evb-cli provides support for paced replay delivery where you can pass a replay speed scalar between 0 and 100 where 0 is as fast as possible (native EventBridge way) and 100 is real time speed where a one hour replay takes one hour. Passing `--replay-speed 10` to a one hour replay will scale the replay speed to 6 minutes, but will still retain the same order and a scaled delay between messages.
 
 Currently EventBridge will run your replay at the fastest possible speed. Due to the unordered nature of EventBridge, this means there's an increased likelyhood that your events will be delivered more randomly during a replay than when live.
 
@@ -93,7 +93,7 @@ Your EventBridge targets should always be idempotent, but for debugging purposes
 For example, you might replay 5 hours of `order` events and want to expect each order to transition from `OPEN` to `CONFIRMED` to `DELIVERED` in the logical order. If you run a default replay it's likely that these events will be delivered in the wrong order.
 
 ### Pricing
-When using `--replay-speed` > 0, each events in the replay will be sent through a Step Functions state machine of 5 state transitions. See [Step Functions pricing](https://aws.amazon.com/step-functions/pricing/) for you region.
+When using `--replay-speed` > 0, each event in the replay will be sent through a Step Functions state machine of 5 state transitions. See [Step Functions pricing](https://aws.amazon.com/step-functions/pricing/) for you region.
 
 ### Caveats
 * At delivery, the `replay-name` field will be stripped. 
