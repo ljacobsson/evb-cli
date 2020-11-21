@@ -13,7 +13,7 @@ Pattern generator and debugging tool for EventBridge
 
 For AWS events, such as `aws.codepipeline` it's already enabled, but for custom events you will have to enable it in the AWS Management Console.
 
-![Demo](images/demo.gif)
+![Demo](https://github.com/mhlabs/evb-cli/raw/master/images/demo.gif)
 
 ### To generate an EventBridge InputTransformer object:
 [Input transformers](https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-input-transformer-tutorial.html) are useful when you only want a small portion of the event sent to your target. This command helps you navigate the JSON payload and generate the [InputTransformer CloudFormation object](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-events-rule-inputtransformer.html)
@@ -22,14 +22,14 @@ For AWS events, such as `aws.codepipeline` it's already enabled, but for custom 
 
 `evb input --format <yaml|json>` - Output format. Default is `json`
 
-![Demo](images/demo-input.gif)
+![Demo](https://github.com/mhlabs/evb-cli/raw/master/images/demo-input.gif)
 
 ### To browse targets of events:
 Select a schema from the schema registry and list its targets. Select a target to browse details such as ARN, event pattern, input transformation, etc.
 
 `evb browse` will let you browse your schemas and get insights into the targets listening to the source/detail-type combination of your event. This only works with explicit matching on `source` and `detail-type`.
 
-![Demo](images/demo-browse.gif)
+![Demo](https://github.com/mhlabs/evb-cli/raw/master/images/demo-browse.gif)
 
 ### To generate an interactive diagram over the event rules of an eventbus
 ```
@@ -42,7 +42,7 @@ Options:
   -p, --profile [profile]    AWS profile to use
   -h, --help                 output usage information
 ```
-![Demo](images/demo-diagram.gif)
+![Demo](https://github.com/mhlabs/evb-cli/raw/master/images/demo-diagram.gif)
 
 This is an experimental feature. Grouping by tag is possible for the following target types: Lambda, StepFunctions, SNS, SQS, Kinesis. More will follow.
 
