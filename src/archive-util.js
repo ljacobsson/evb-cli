@@ -56,88 +56,93 @@ async function setupReplay(
   stepFunctions,
   replayName
 ) {
-  ruleConfig.Destination.FilterArns;
-  let rule = await eventBridge
-    .describeRule({
-      Name: ruleConfig.Destination.FilterArns[0].split("/").slice(-1)[0],
-      EventBusName: eventbus,
-    })
-    .promise(); // TODO - iterate!
-  const sfRule = Object.assign({}, rule);
-  const dispatchRule = Object.assign({}, rule);
-  const pattern = JSON.parse(sfRule.EventPattern);
-  sfRule.EventPattern = JSON.stringify(pattern);
-  const dispatchSource = `${replayName}-${pattern.source}`;
-  pattern.source = [dispatchSource];
-  dispatchRule.EventPattern = JSON.stringify(pattern);
-
-  const targets = await eventBridge
-    .listTargetsByRule({
-      EventBusName: eventbus,
-      Rule: sfRule.Name.split("/").slice(-1)[0],
-    })
-    .promise();
-  for (const target of targets.Targets) {
-    const sfTarget = Object.assign({}, target);
-    delete sfTarget.Input;
-    delete sfTarget.InputPath;
-    sfTarget.InputTransformer = {
-      InputPathsMap: {
-        OriginalEvent: "$",
-      },
-    };
-    const accountId = ruleConfig.EventSourceArn.split(":")[4];
-    sfTarget.InputTransformer.InputTemplate = `{\"OriginalEvent\": <OriginalEvent>, "StartTime": "${ruleConfig.EventStartTime}", "TargetArn": "${sfTarget.Arn}", "Action": "dispatch", "ReplaySpeed": ${replaySpeed}, "DispatchSource": "${dispatchSource}"}`;
-    sfTarget.Arn = `arn:aws:states:${AWS.config.region}:${accountId}:stateMachine:evb-cli-paced-replays`;
-    const name = `evb-cli-${sfRule.Name.substring(
-      0,
-      30
-    )}-${new Date().getTime()}`;
-    sfRule.Name = `${name}-sf`;
-    dispatchRule.Name = `${name}-dispatch`;
-    delete sfRule.Arn;
-    delete dispatchRule.Arn;
-    dispatchRule.EventBusName = "evb-cli-replaybus";
-    sfRule.RoleArn = `arn:aws:iam::${accountId}:role/evb-cli-eventbridge-to-stepfunctions`;
-    const evbSFRuleResponse = await eventBridge.putRule(sfRule).promise();
-    const dispatchRuleResponse = await eventBridge
-      .putRule(dispatchRule)
-      .promise();
-
-    sfTarget.RoleArn = `arn:aws:iam::${accountId}:role/evb-cli-eventbridge-to-stepfunctions`;
-
-    await eventBridge
-      .putTargets({
-        Targets: [sfTarget],
-        Rule: evbSFRuleResponse.RuleArn.split("/").slice(-1)[0],
+  const filterArns = [];
+  for (const filterArn of ruleConfig.Destination.FilterArns) {
+    let rule = await eventBridge
+      .describeRule({
+        Name: filterArn.split("/").slice(-1)[0],
         EventBusName: eventbus,
       })
       .promise();
-    await eventBridge
-      .putTargets({
-        Targets: [target],
-        Rule: dispatchRuleResponse.RuleArn.split("/").slice(-1)[0],
-        EventBusName: dispatchRule.EventBusName,
+    const sfRule = Object.assign({}, rule);
+    const dispatchRule = Object.assign({}, rule);
+    const pattern = JSON.parse(sfRule.EventPattern);
+    sfRule.EventPattern = JSON.stringify(pattern);
+    const dispatchSource = `${replayName}-${
+      pattern.source
+    }-${new Date().getTime()}`;
+    pattern.source = [dispatchSource];
+    dispatchRule.EventPattern = JSON.stringify(pattern);
+
+    const targets = await eventBridge
+      .listTargetsByRule({
+        EventBusName: eventbus,
+        Rule: sfRule.Name.split("/").slice(-1)[0],
       })
       .promise();
-    await stepFunctions
-      .startExecution({
-        stateMachineArn: sfTarget.Arn,
-        input: JSON.stringify({
+    for (const target of targets.Targets) {
+      const sfTarget = Object.assign({}, target);
+      delete sfTarget.Input;
+      delete sfTarget.InputPath;
+      sfTarget.InputTransformer = {
+        InputPathsMap: {
+          OriginalEvent: "$",
+        },
+      };
+      const accountId = ruleConfig.EventSourceArn.split(":")[4];
+      sfTarget.InputTransformer.InputTemplate = `{\"OriginalEvent\": <OriginalEvent>, "StartTime": "${ruleConfig.EventStartTime}", "TargetArn": "${sfTarget.Arn}", "Action": "dispatch", "ReplaySpeed": ${replaySpeed}, "DispatchSource": "${dispatchSource}"}`;
+      sfTarget.Arn = `arn:aws:states:${AWS.config.region}:${accountId}:stateMachine:evb-cli-paced-replays`;
+      const name = `evb-cli-${sfRule.Name.substring(
+        0,
+        30
+      )}-${new Date().getTime()}`;
+      sfRule.Name = `${name}-sf`;
+      dispatchRule.Name = `${name}-dispatch`;
+      delete sfRule.Arn;
+      delete dispatchRule.Arn;
+      dispatchRule.EventBusName = "evb-cli-replaybus";
+      sfRule.RoleArn = `arn:aws:iam::${accountId}:role/evb-cli-eventbridge-to-stepfunctions`;
+      const evbSFRuleResponse = await eventBridge.putRule(sfRule).promise();
+      const dispatchRuleResponse = await eventBridge
+        .putRule(dispatchRule)
+        .promise();
+
+      sfTarget.RoleArn = `arn:aws:iam::${accountId}:role/evb-cli-eventbridge-to-stepfunctions`;
+
+      await eventBridge
+        .putTargets({
+          Targets: [sfTarget],
+          Rule: evbSFRuleResponse.RuleArn.split("/").slice(-1)[0],
           EventBusName: eventbus,
-          Action: "cleanup",
-          OriginalEvent: {
-            time: ruleConfig.EventEndTime,
-          },
-          Rules: [sfRule.Name, dispatchRule.Name],
-          StartTime: ruleConfig.EventStartTime,
-          ReplaySpeed: replaySpeed,
-          DispatchSource: dispatchSource,
-        }),
-      })
-      .promise();
-    ruleConfig.Destination.FilterArns = [evbSFRuleResponse.RuleArn];
+        })
+        .promise();
+      await eventBridge
+        .putTargets({
+          Targets: [target],
+          Rule: dispatchRuleResponse.RuleArn.split("/").slice(-1)[0],
+          EventBusName: dispatchRule.EventBusName,
+        })
+        .promise();
+      await stepFunctions
+        .startExecution({
+          stateMachineArn: sfTarget.Arn,
+          input: JSON.stringify({
+            EventBusName: eventbus,
+            Action: "cleanup",
+            OriginalEvent: {
+              time: ruleConfig.EventEndTime,
+            },
+            Rules: [sfRule.Name, dispatchRule.Name],
+            StartTime: ruleConfig.EventStartTime,
+            ReplaySpeed: replaySpeed,
+            DispatchSource: dispatchSource,
+          }),
+        })
+        .promise();
+        filterArns.push(evbSFRuleResponse.RuleArn);
+    }
   }
+  ruleConfig.Destination.FilterArns = filterArns;
 }
 
 async function getReplayConfig(cmd, showRuleSelector) {
@@ -183,7 +188,6 @@ async function selectRules(eventbus, rulePrefix) {
       true
     );
   } while (filteredRules && filteredRules.length === 0);
-  console.log("ddd", filteredRules);
   return filteredRules;
 }
 
