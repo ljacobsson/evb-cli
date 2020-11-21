@@ -14,12 +14,6 @@ require("./src/commands/local");
 
 program.version(package.version, "-v, --vers", "output the current version");
 
-if (process.argv.length > 2) {
-  // Renamed graph to diagram to be semantically correct. This is for backward compatibility
-  if (process.argv[2] === "graph" || process.argv[2] === "g") {
-    process.argv[2] = "diagram";
-  }
-}
 program.parse(process.argv);
 
 if (process.argv.length < 3) {
