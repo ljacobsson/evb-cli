@@ -64,6 +64,7 @@ async function setupReplay(
         EventBusName: eventbus,
       })
       .promise();
+    delete rule.CreatedBy;
     const sfRule = Object.assign({}, rule);
     const dispatchRule = Object.assign({}, rule);
     const pattern = JSON.parse(sfRule.EventPattern);
