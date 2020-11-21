@@ -35,7 +35,13 @@ async function replay(cmd) {
   const stepFunctions = new AWS.StepFunctions();
   const ruleConfig = await getReplayConfig(cmd, true);
   if (cmd.replaySpeed > 0) {
-    await setupReplay(ruleConfig, cmd.eventbus, cmd.replaySpeed, stepFunctions, cmd.replayName);
+    await setupReplay(
+      ruleConfig,
+      cmd.eventbus,
+      cmd.replaySpeed,
+      stepFunctions,
+      cmd.replayName
+    );
   }
   const resp = await eventBridge.startReplay(ruleConfig).promise();
   console.log(
@@ -43,7 +49,13 @@ async function replay(cmd) {
   );
 }
 
-async function setupReplay(ruleConfig, eventbus, replaySpeed, stepFunctions, replayName) {
+async function setupReplay(
+  ruleConfig,
+  eventbus,
+  replaySpeed,
+  stepFunctions,
+  replayName
+) {
   ruleConfig.Destination.FilterArns;
   let rule = await eventBridge
     .describeRule({
@@ -160,13 +172,18 @@ async function selectRules(eventbus, rulePrefix) {
   const rules = await eventBridge
     .listRules({ EventBusName: eventbus, NamePrefix: rulePrefix })
     .promise();
-  const filteredRules = await inputUtil.multiSelectFrom(
-    rules.Rules.filter((p) => !p.ManagedBy).map((p) => {
-      return { name: p.Name, value: p };
-    }),
-    "Select rules to replay against",
-    true
-  );
+  let filteredRules;
+
+  do {
+    filteredRules = await inputUtil.multiSelectFrom(
+      rules.Rules.filter((p) => !p.ManagedBy).map((p) => {
+        return { name: p.Name, value: p };
+      }),
+      "Select rules to replay against",
+      true
+    );
+  } while (filteredRules && filteredRules.length === 0);
+  console.log("ddd", filteredRules);
   return filteredRules;
 }
 
