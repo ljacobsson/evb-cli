@@ -93,7 +93,7 @@ Your EventBridge targets should always be idempotent, but for debugging purposes
 For example, you might replay 5 hours of `order` events and want to expect each order to transition from `OPEN` to `CONFIRMED` to `DELIVERED` in the logical order. If you run a default replay it's likely that these events will be delivered in the wrong order.
 
 ### Pricing
-When using `--replay-speed` > 0, each events in the replay will be sent through a Step Functions state machine of 5 state transitions. See [Step Functions pricing](https://aws.amazon.com/step-functions/pricing/) for you region.
+When using `--replay-speed` > 0, each event in the replay will be sent through a Step Functions state machine of 5 state transitions. See [Step Functions pricing](https://aws.amazon.com/step-functions/pricing/) for you region.
 
 ### Caveats
 * At delivery, the `replay-name` field will be stripped. 
