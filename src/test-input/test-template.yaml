@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform:
+  - 'AWS::Serverless-2016-10-31'
+Resources:
+  MyFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: .
+      Runtime: nodejs12.x
+      Handler: src/index.handler
+      Events:
+        MyEvent:
+          Type: EventBridgeRule
+          Properties:
+            InputPath: $.detail
+            EventBusName: examplebus
+            Pattern:
+              source:
+                - example-producer
+              detail-type:
+                - My Event
+
