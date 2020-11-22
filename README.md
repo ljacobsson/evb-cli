@@ -1,3 +1,5 @@
+![Node.js CI](https://github.com/mhlabs/evb-cli/workflows/Node.js%20CI/badge.svg)
+
 # evb-cli
 Pattern generator and debugging tool for EventBridge
 
