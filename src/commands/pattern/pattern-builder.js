@@ -87,4 +87,6 @@ function init(source, detailType) {
 
 module.exports = {
   buildPattern,
+  buildSegment,
+  init
 };

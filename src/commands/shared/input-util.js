@@ -1,11 +1,17 @@
+// date-prompt fails if stdout doesn't isn't a window context
+if (!process.stdout.getWindowSize) {
+  process.stdout.getWindowSize = function () {
+    return [10, 10];
+  };
+}
+
 const inquirer = require("inquirer");
 const prompt = inquirer.createPromptModule();
-const datePrompt = require('date-prompt')
+const datePrompt = require("date-prompt");
 
 const BACK = "↩ back";
 const UNDO = "⎌ undo";
 const DONE = "✔ done";
-const CONSUME_LOCALLY = "⚡ consume locally";
 const backNavigation = [BACK, new inquirer.Separator("-------------")];
 const doneNavigation = [DONE, UNDO, new inquirer.Separator("-------------")];
 const filterRules = [
@@ -69,7 +75,6 @@ async function getStringValue(fieldName, type) {
         message: `Upper bound for ${fieldName}`,
       });
       val = [">=", parseFloat(lower.id), "<", parseFloat(upper.id)];
-
     } else {
       const value = await prompt({
         name: "id",
@@ -225,5 +230,5 @@ module.exports = {
   getDate,
   BACK,
   DONE,
-  UNDO
+  UNDO,
 };
