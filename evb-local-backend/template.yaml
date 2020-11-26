@@ -300,7 +300,7 @@ Resources:
       Runtime: nodejs12.x
       Policies:
         - EventBridgePutEventsPolicy:
-            EventBusName: !Ref ReplayBus
+            EventBusName: '*'
   PacedCleanup:
     Type: 'AWS::Serverless::Function'
     Properties:
