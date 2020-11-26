@@ -298,6 +298,9 @@ Resources:
       Handler: ./src/step-functions/PacedDispatch.handler
       MemorySize: 256
       Runtime: nodejs12.x
+      Environment:
+        Variables:
+          AccountId: !Ref AWS::AccountId
       Policies:
         - EventBridgePutEventsPolicy:
             EventBusName: '*'
@@ -317,6 +320,8 @@ Resources:
               - 'events:DeleteRule'
               - 'events:RemoveTargets'
               - 'events:ListTargetsByRule'
+              - 'iam:DeleteRolePolicy'
+              - 'lambda:RemovePermission'
             Resource:
               - '*'
   EventToStepFunctionsRole:

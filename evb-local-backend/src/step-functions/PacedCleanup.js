@@ -1,5 +1,7 @@
 const AWS = require("aws-sdk");
 const eventbridge = new AWS.EventBridge();
+const lambda = new AWS.Lambda();
+const iam = new AWS.IAM();
 const eventBusName = "evb-cli-replaybus";
 exports.handler = async function (event, context) {
   for (const rule of event.Rules) {
@@ -18,5 +20,21 @@ exports.handler = async function (event, context) {
       })
       .promise();
     await eventbridge.deleteRule({ EventBusName: bus, Name: rule }).promise();
+  }
+  for (const item of event.Policies) {
+    await iam
+      .deleteRolePolicy({
+        RoleName: item.roleName,
+        PolicyName: item.policyName,
+      })
+      .promise();
+  }
+  for (const item of event.Permissions) {
+    await lambda
+      .removePermission({
+        FunctionName: item.functionName,
+        StatementId: item.statementId,
+      })
+      .promise();
   }
 };
