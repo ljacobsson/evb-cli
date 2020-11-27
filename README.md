@@ -143,7 +143,7 @@ If the rule's logical ID is omitted such as `evb local --rule` the tool will par
 ## Replaying archived events
 Add `--replay` option to command. This will guide you through a wizard to find the archive and set the time range to replay.
 
-Note that this currently only works together with the `-t` flag and it requires at least v0.0.6 of the [evb-local backend](https://serverlessrepo.aws.amazon.com/applications/eu-west-1/751354400372/evb-local)
+Note that this currently only works together with the `-t` flag and it requires at least v0.0.8 of the [evb-local backend](https://serverlessrepo.aws.amazon.com/applications/eu-west-1/751354400372/evb-local)
 
 ## Forward events to sam-local
 All `evb local` commands support a `--sam-local` flag. When used, events will be passed on to sam-local for more advanced debugging

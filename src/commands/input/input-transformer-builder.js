@@ -28,7 +28,7 @@ async function build(format, schemas) {
     const path = chosenProp.$ref;
     if (path) {
       // If property points at reference, go to reference in schema and continue
-      currentObject = findCurrent(path, schema);
+      currentObject = patternBuilder.findCurrent(path, schema);
       continue;
     }
 

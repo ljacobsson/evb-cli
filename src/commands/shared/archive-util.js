@@ -9,6 +9,8 @@ const { split } = require("temp-dir");
 let eventBridge, sts;
 
 async function selectArchive(eventbus) {
+  sts = sts || new AWS.STS();
+  eventBridge = eventBridge || new AWS.EventBridge();
   caller = await sts.getCallerIdentity().promise();
   const busArn = `arn:aws:events:${AWS.config.region}:${caller.Account}:event-bus/${eventbus}`;
   const archives = await eventBridge
@@ -35,13 +37,7 @@ async function replay(cmd) {
   const stepFunctions = new AWS.StepFunctions();
   const ruleConfig = await getReplayConfig(cmd, true);
   if (cmd.replaySpeed > 0) {
-    await setupReplay(
-      ruleConfig,
-      cmd.eventbus,
-      cmd.replaySpeed,
-      stepFunctions,
-      cmd.replayName
-    );
+    await setupReplay(cmd, ruleConfig, stepFunctions);
   }
   if (ruleConfig) {
     const resp = await eventBridge.startReplay(ruleConfig).promise();
@@ -51,35 +47,42 @@ async function replay(cmd) {
   }
 }
 
-async function setupReplay(
-  ruleConfig,
-  eventbus,
-  replaySpeed,
-  stepFunctions,
-  replayName
-) {
+async function setupReplay(cmd, ruleConfig, stepFunctions) {
   const filterArns = [];
+  cmd.rules = [];
+  cmd.policies = [];
+  cmd.permissions = [];
+  await createAndExecute(cmd, ruleConfig, stepFunctions, filterArns);
+}
+
+async function createAndExecute(
+  cmd,
+  ruleConfig,
+  stepFunctions,
+  filterArns
+) {
   for (const filterArn of ruleConfig.Destination.FilterArns) {
     let rule = await eventBridge
       .describeRule({
         Name: filterArn.split("/").slice(-1)[0],
-        EventBusName: eventbus,
+        EventBusName: cmd.eventbus,
       })
       .promise();
     delete rule.CreatedBy;
+    const name = `evb-cli-${rule.Name.substring(
+      0,
+      30
+    )}-${new Date().getTime()}`;
+
+    const pattern = JSON.parse(rule.EventPattern);
+    pattern.source = cmd.sourceOverride || pattern.source; //OBS
     const sfRule = Object.assign({}, rule);
-    const dispatchRule = Object.assign({}, rule);
-    const pattern = JSON.parse(sfRule.EventPattern);
     sfRule.EventPattern = JSON.stringify(pattern);
-    const dispatchSource = `${replayName}-${
-      pattern.source
-    }-${new Date().getTime()}`;
-    pattern.source = [dispatchSource];
-    dispatchRule.EventPattern = JSON.stringify(pattern);
+    const dispatchSource = cmd.dispatchSourceOverride || pattern.source; //OBS
 
     const targets = await eventBridge
       .listTargetsByRule({
-        EventBusName: eventbus,
+        EventBusName: cmd.eventbus,
         Rule: sfRule.Name.split("/").slice(-1)[0],
       })
       .promise();
@@ -93,22 +96,22 @@ async function setupReplay(
         },
       };
       const accountId = ruleConfig.EventSourceArn.split(":")[4];
-      sfTarget.InputTransformer.InputTemplate = `{\"OriginalEvent\": <OriginalEvent>, "StartTime": "${ruleConfig.EventStartTime}", "TargetArn": "${sfTarget.Arn}", "Action": "dispatch", "ReplaySpeed": ${replaySpeed}, "DispatchSource": "${dispatchSource}"}`;
+      sfTarget.InputTransformer.InputTemplate = `{\"OriginalEvent\": <OriginalEvent>, "StartTime": "${
+        ruleConfig.EventStartTime
+      }", "TargetArn": "${
+        sfTarget.Arn
+      }", "Action": "dispatch", "ReplaySpeed": ${
+        cmd.replaySpeed || 0
+      }, "DispatchSource": "${
+        cmd.dispatchSourceOverride
+      }", "EventBusName": "${cmd.eventbus}", "ReplayName": "${
+        cmd.replayName
+      }"}`;
       sfTarget.Arn = `arn:aws:states:${AWS.config.region}:${accountId}:stateMachine:evb-cli-paced-replays`;
-      const name = `evb-cli-${sfRule.Name.substring(
-        0,
-        30
-      )}-${new Date().getTime()}`;
       sfRule.Name = `${name}-sf`;
-      dispatchRule.Name = `${name}-dispatch`;
       delete sfRule.Arn;
-      delete dispatchRule.Arn;
-      dispatchRule.EventBusName = "evb-cli-replaybus";
       sfRule.RoleArn = `arn:aws:iam::${accountId}:role/evb-cli-eventbridge-to-stepfunctions`;
       const evbSFRuleResponse = await eventBridge.putRule(sfRule).promise();
-      const dispatchRuleResponse = await eventBridge
-        .putRule(dispatchRule)
-        .promise();
 
       sfTarget.RoleArn = `arn:aws:iam::${accountId}:role/evb-cli-eventbridge-to-stepfunctions`;
 
@@ -116,28 +119,25 @@ async function setupReplay(
         .putTargets({
           Targets: [sfTarget],
           Rule: evbSFRuleResponse.RuleArn.split("/").slice(-1)[0],
-          EventBusName: eventbus,
+          EventBusName: cmd.eventbus,
         })
         .promise();
-      await eventBridge
-        .putTargets({
-          Targets: [target],
-          Rule: dispatchRuleResponse.RuleArn.split("/").slice(-1)[0],
-          EventBusName: dispatchRule.EventBusName,
-        })
-        .promise();
+      cmd.rules.push(sfRule.Name);
+
       await stepFunctions
         .startExecution({
           stateMachineArn: sfTarget.Arn,
           input: JSON.stringify({
-            EventBusName: eventbus,
+            EventBusName: cmd.eventbus,
             Action: "cleanup",
             OriginalEvent: {
               time: ruleConfig.EventEndTime,
             },
-            Rules: [sfRule.Name, dispatchRule.Name],
+            Rules: cmd.rules,
+            Policies: cmd.policies,
+            Permissions: cmd.permissions,
             StartTime: ruleConfig.EventStartTime,
-            ReplaySpeed: replaySpeed,
+            ReplaySpeed: cmd.replaySpeed || 0,
             DispatchSource: dispatchSource,
           }),
         })
@@ -145,6 +145,7 @@ async function setupReplay(
       filterArns.push(evbSFRuleResponse.RuleArn);
     }
   }
+
   ruleConfig.Destination.FilterArns = filterArns;
 }
 
@@ -197,20 +198,10 @@ async function selectRules(eventbus, rulePrefix) {
   return filteredRules;
 }
 
-async function selectRule(eventbus, rulePrefix) {
-  const rules = await eventBridge
-    .listRules({ EventBusName: eventbus, NamePrefix: rulePrefix })
-    .promise();
-  const filteredRules = await inputUtil.selectFrom(
-    rules.Rules.filter((p) => !p.ManagedBy).map((p) => {
-      return { name: p.Name, value: p };
-    }),
-    "Select rule to filter against"
-  );
-  return filteredRules;
-}
-
 module.exports = {
   replay,
   getReplayConfig,
+  selectArchive,
+  getDates,
+  createAndExecute,
 };

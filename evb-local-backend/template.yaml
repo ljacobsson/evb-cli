@@ -14,7 +14,7 @@ Metadata:
       - evb-cli
       - debugging
     HomePageUrl: 'https://github.com/mhlabs/evb-cli#readme'
-    SemanticVersion: 0.0.7
+    SemanticVersion: 0.0.8
     SourceCodeUrl: 'https://github.com/mhlabs/evb-cli'
 Resources:
   OnConnectFunction:
@@ -298,9 +298,12 @@ Resources:
       Handler: ./src/step-functions/PacedDispatch.handler
       MemorySize: 256
       Runtime: nodejs12.x
+      Environment:
+        Variables:
+          AccountId: !Ref AWS::AccountId
       Policies:
         - EventBridgePutEventsPolicy:
-            EventBusName: !Ref ReplayBus
+            EventBusName: '*'
   PacedCleanup:
     Type: 'AWS::Serverless::Function'
     Properties:
@@ -317,6 +320,8 @@ Resources:
               - 'events:DeleteRule'
               - 'events:RemoveTargets'
               - 'events:ListTargetsByRule'
+              - 'iam:DeleteRolePolicy'
+              - 'lambda:RemovePermission'
             Resource:
               - '*'
   EventToStepFunctionsRole:
@@ -348,8 +353,5 @@ Resources:
               - !Ref PacedReplayStateMachine
       Roles:
         - !Ref EventToStepFunctionsRole
-  ReplayBus:
-    Type: 'AWS::Events::EventBus'
-    Properties:
-      Name: evb-cli-replaybus
+  
 Outputs: {}

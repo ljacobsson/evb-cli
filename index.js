@@ -10,6 +10,7 @@ require("./src/commands/diagram");
 require("./src/commands/extract-sam-event");
 require("./src/commands/test-event");
 require("./src/commands/replay");
+require("./src/commands/replay-dead-letter");
 require("./src/commands/local");
 
 program.version(package.version, "-v, --vers", "output the current version");
