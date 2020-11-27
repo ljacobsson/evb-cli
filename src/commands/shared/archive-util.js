@@ -198,19 +198,6 @@ async function selectRules(eventbus, rulePrefix) {
   return filteredRules;
 }
 
-async function selectRule(eventbus, rulePrefix) {
-  const rules = await eventBridge
-    .listRules({ EventBusName: eventbus, NamePrefix: rulePrefix })
-    .promise();
-  const filteredRules = await inputUtil.selectFrom(
-    rules.Rules.filter((p) => !p.ManagedBy).map((p) => {
-      return { name: p.Name, value: p };
-    }),
-    "Select rule to filter against"
-  );
-  return filteredRules;
-}
-
 module.exports = {
   replay,
   getReplayConfig,

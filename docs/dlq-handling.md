@@ -184,3 +184,5 @@ Steps:
 Because the actual replay is targeting the Step Functions state machine and is actually dispatched back to the eventbus in the Dispatch step, the `replay-name` field is lost. This is due to limitattions in the SDK where you can't explicitly set it. Instead we're passing the replay ARN in the `resources` array.
 
 To make sure only the target receives the event we're modifying the `source` on the temporary rule to match on the `replay-name`. If you're using the `source` for any logic in your target, then be aware of this.
+
+* Note that set-speed replays for normal non-dead-letter replays will target all rules on the bus. This issue is described in #17 *
