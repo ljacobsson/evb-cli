@@ -119,6 +119,7 @@ _Illustration of the event pattern mismatch_
 
 What we need is another rule with the same target function, but with a different event pattern and input path:
 ![sqs-redrive](assets/archive-replay2.png)
+
 The bottom pattern is the one needed to ingest a replay from the dead letter archive. However, since it's bound to a replay-name, we want it to only exist during the cours eof the replay
 
 
@@ -143,6 +144,7 @@ Options:
 
 
 ![replay all](assets/replay-all.gif)
+
 This will start a replay at the fastest possible speed of events between the datetimes you chose. Should you want to run the replay at a slower speed, then you can pass `--replay-speed` with a value between 1 and 100, where 100 is 100% of the original duration. For example, if you choose to replay 3 hours of events with 100% speed, then the replay will take 3 hours. If you choose 50, then it'll take 1.5 hours
 
 ### Replays of failed events
@@ -168,6 +170,7 @@ When the replay is over this rule and associated permissions are removed.
 ## Paced replays
 When adding `--replay-speed <1-100>`, the tool with create a new temporary rule wich is forwarding the replayed events to a StepFunctions state machine:
 ![paced replays](assets/stepfunctions.png)
+
 Steps:
 * `CalculateWait`: Calculates the duration of the `Wait` state base don the length of the replay and the `--replay-speed` precentage.
 * `Wait`: Wait state holding each event from dispatching based on the set replay speed
