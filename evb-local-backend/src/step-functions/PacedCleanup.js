@@ -2,10 +2,9 @@ const AWS = require("aws-sdk");
 const eventbridge = new AWS.EventBridge();
 const lambda = new AWS.Lambda();
 const iam = new AWS.IAM();
-const eventBusName = "evb-cli-replaybus";
 exports.handler = async function (event, context) {
   for (const rule of event.Rules) {
-    const bus = rule.endsWith("dispatch") ? eventBusName : event.EventBusName;
+    const bus = event.EventBusName;
     const targets = await eventbridge
       .listTargetsByRule({
         EventBusName: bus,

@@ -178,7 +178,7 @@ Steps:
 * `CleanUp`: Removes all temporary resources created for the replay
 * `Dispatch`: Re-puts the events on the event bus
 
-*Note that the Step Functions flow will only happen when using `--replay-speed` > 0 or replaying from an OnFailure archive. Both require the [evb-local](https://serverlessrepo.aws.amazon.com/applications/eu-west-1/751354400372/evb-local) backend installed in your AWS account.
+*Note that the Step Functions flow will only happen when using `--replay-speed` > 0 or replaying from an OnFailure archive. Both require the [evb-local](https://serverlessrepo.aws.amazon.com/applications/eu-west-1/751354400372/evb-local) >= v0.0.8 backend installed in your AWS account.
 
 ## Caveats of paced and dead-letter replays
 Because the actual replay is targeting the Step Functions state machine and is actually dispatched back to the eventbus in the Dispatch step, the `replay-name` field is lost. This is due to limitattions in the SDK where you can't explicitly set it. Instead we're passing the replay ARN in the `resources` array.
