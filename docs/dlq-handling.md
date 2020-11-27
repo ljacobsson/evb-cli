@@ -1,16 +1,52 @@
 # Lambda Destinations + EventBridge Archive & Replay + evb-cli = :rocket:
 
-In a pre-EventBridge time a common pub/sub pattern was SNS/SQS. We always added an SQS DLQ to our SQS->Lambda event sources, and when we wanted to redrive it, we could simply add it as a trigger to the original function. The schema of the messages would be the same and the Lambda handler would be able to parse the event.
+In a pre-EventBridge time a common pub/sub pattern was SNS/SQS. We always added an SQS DLQ to our SQS->Lambda event sources, and when we wanted to redrive it, we could simply add it as a trigger to the original function. The structure of the messages would be the same and the Lambda handler would be able to parse the event:
 
 With EventBridge we're given the power to transform the input the way we want it. The event doesn't follow the `$.Records[]`-format, which is great. However, the only durable DLQ choice for EventBridge would be an `OnFailure` destination to `SQS`. When we wanted to redrive messages, we needed an intermediary function that fetched the message body from the SQS record and passed it back on EventBridge:
+```
+{
+    "Records": [
+        {
+            "messageId": "059f36b4-87a3-44ab-83d2-661975830a7d",
+            "receiptHandle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
+            "body": "{\"my\": \"payload\"}",   <--- this is what we want to forward to the function
+            "attributes": {
+                "ApproximateReceiveCount": "1",
+                "SentTimestamp": "1545082649183",
+                "SenderId": "AIDAIENQZJOLO23YVJ4VO",
+                "ApproximateFirstReceiveTimestamp": "1545082649185"
+            },
+            "messageAttributes": {},
+            "md5OfBody": "e4e68fb7bd0e697a0ae8f1bb342846b3",
+            "eventSource": "aws:sqs",
+            "eventSourceARN": "arn:aws:sqs:us-east-2:123456789012:my-queue",
+            "awsRegion": "us-east-2"
+        },
+        [...]
+    ]
+}
+```
 
 ![sqs-redrive](assets/sqs-dlq-redrive.png)
 
 ## Using EventBridge as Lambda destination
 
+```
+DemoEventConsumer:
+  Type: 'AWS::Serverless::Function'
+  Properties:
+    Handler: src/app.handler
+    EventInvokeConfig:          
+        MaximumRetryAttempts: 0
+        DestinationConfig:
+            OnFailure:
+              Type: EventBridge
+              Destination: !Sub arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/my-event-bus
+```
+
 Until EventBridge archives, passing failures to EventBridge meant that you had to have a rule consuming those events, or they'd get lost.
 
-The event being put on the eventbus in the case of a function failure looks like this (with uninteresting fields removed):
+The event being put on the eventbus in the case of a function failure looks like this (with some fields removed for brevity):
 
 ```
 {
@@ -70,12 +106,15 @@ FailureArchive:
 
 Now all you need to do to make your failed events durable is to add an `OnFailure` destination to your function. Note that this function could be triggered by any asynchronous event source.
 
+Note that [extra cost](https://aws.amazon.com/eventbridge/pricing/) for archiving applies and should be considered if you have an environment passing vast amounts of events to the OnFailure destination.
+
 ## Replaying failed events
 EventBridge replays lets you replay archived events between two datetimes against either all rules or specified ones. This works great if the archived events match the original event pattern and is suitable to recover from total downtime due to a dead third party service for example, but what if you have a mission critical target function that over the past 3 hours has handled 10 million invocations with a 1% error rate. then you don't want to rerun _all_ 10 million events only to reprocess the 100K faulty ones.
 
 In this scenario we want to create a replay of _only the erroneous_ events. However when replaying from the `OnFailure`-archived events, the event body looks different and won't match the target rule's event pattern. What we want to invoke the function with is the `$.detail.requestPayload` object. This is the result of any input transformations made by the original target.
 
 ![sqs-redrive](assets/archive-replay1.png)
+
 _Illustration of the event pattern mismatch_
 
 What we need is another rule with the same target function, but with a different event pattern and input path:
@@ -138,3 +177,7 @@ Steps:
 
 *Note that the Step Functions flow will only happen when using `--replay-speed` > 0 or replaying from an OnFailure archive. Both require the [evb-local](https://serverlessrepo.aws.amazon.com/applications/eu-west-1/751354400372/evb-local) backend installed in your AWS account.
 
+## Caveats of paced and dead-letter replays
+Because the actual replay is targeting the Step Functions state machine and is actually dispatched back to the eventbus in the Dispatch step, the `replay-name` field is lost. This is due to limitattions in the SDK where you can't explicitly set it. Instead we're passing the replay ARN in the `resources` array.
+
+To make sure only the target receives the event we're modifying the `source` on the temporary rule to match on the `replay-name`. If you're using the `source` for any logic in your target, then be aware of this.
