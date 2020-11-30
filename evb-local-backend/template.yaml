@@ -267,7 +267,7 @@ Resources:
             End: true
           WaitForCleanup:
             Type: Wait
-            Seconds: 600
+            Seconds: 100
             Next: Cleanup
           Cleanup:
             Type: Task

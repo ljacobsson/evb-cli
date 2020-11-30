@@ -139,7 +139,7 @@ async function getDetailTypeName(schemas, sourceName) {
 
 async function getSourceName(schemas) {
   const sources = [
-    ...new Set(schemas.Schemas.map((p) => p.SchemaName.split("@")[0])),
+    ...new Set(schemas.map((p) => p.SchemaName.split("@")[0])),
   ];
   const source = await prompt({
     name: "id",

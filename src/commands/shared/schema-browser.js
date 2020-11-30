@@ -32,12 +32,30 @@ function outputPattern(output, format) {
   }
 }
 
+async function* ListSchemas(schemas, params) {
+  let token;
+  do {
+   
+    const response = await schemas
+      .listSchemas({
+        ...params,
+        NextToken: token,
+      })
+      .promise();
+
+    yield response.Schemas;
+
+    ({ NextToken: token } = response);
+  } while (token);
+}
+
 async function getSchema(schemas) {
   const registry = await inputUtil.getRegistry(schemas);
-  const schemaResponse = await schemas
-    .listSchemas({ RegistryName: registry.id })
-    .promise();
-  const sourceName = await inputUtil.getSourceName(schemaResponse);
+  const schemaList = [];
+  for await (schemaItem of ListSchemas(schemas, { RegistryName: registry.id })) {
+    schemaList.push(...schemaItem);
+  }
+  const sourceName = await inputUtil.getSourceName(schemaList);
   const detailTypeName = await inputUtil.getDetailTypeName(
     schemaResponse,
     sourceName
@@ -60,10 +78,9 @@ function findCurrent(path, schema) {
   return current;
 }
 
-
 module.exports = {
   deepMerge,
   getSchema,
   outputPattern,
-  findCurrent
+  findCurrent,
 };
