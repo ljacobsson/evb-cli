@@ -57,7 +57,7 @@ async function getSchema(schemas) {
   }
   const sourceName = await inputUtil.getSourceName(schemaList);
   const detailTypeName = await inputUtil.getDetailTypeName(
-    schemaResponse,
+    schemaList,
     sourceName
   );
   const schemaName = `${sourceName}@${detailTypeName}`.replace(/\//g, "-");
