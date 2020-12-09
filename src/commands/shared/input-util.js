@@ -123,7 +123,7 @@ async function getProperty(currentObject, objectArray) {
 }
 
 async function getDetailTypeName(schemas, sourceName) {
-  const detailTypes = schemas.Schemas.filter((p) =>
+  const detailTypes = schemas.filter((p) =>
     p.SchemaName.startsWith(`${sourceName}@`)
   ).map((p) => p.SchemaName.split("@")[1]);
   const detailType = await prompt({
