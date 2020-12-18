@@ -1,8 +1,8 @@
-const patternBuilder = require("../shared/schema-browser");
+const schemaBrowser = require("../shared/schema-browser");
 const inputUtil = require("../shared/input-util");
 
 async function buildPattern(format, schemas) {
-  const { sourceName, schema } = await patternBuilder.getSchema(schemas);
+  const { sourceName, schema } = await schemaBrowser.getSchema(schemas);
 
   let pattern = init(
     sourceName,
@@ -27,17 +27,17 @@ async function buildPattern(format, schemas) {
         pattern = Object.assign({}, lastItem);
       }
       objectArray = [];
-      patternBuilder.outputPattern(pattern, format);
+      schemaBrowser.outputPattern(pattern, format);
       continue;
     }
     if (property.id === inputUtil.DONE) {
-      patternBuilder.outputPattern(pattern, format);
+      schemaBrowser.outputPattern(pattern, format);
       break;
     }
     const path = chosenProp.$ref;
     if (path) {
       // If property points at reference, go to reference in schema and continue
-      currentObject = patternBuilder.findCurrent(path, schema);
+      currentObject = schemaBrowser.findCurrent(path, schema);
       if (currentObject.properties) {
         continue;
       }
@@ -47,8 +47,8 @@ async function buildPattern(format, schemas) {
 
     let current = buildSegment(answer, objectArray);
 
-    pattern = deepMerge(pattern, current);
-    outputPattern(pattern, format);
+    pattern = schemaBrowser.deepMerge(pattern, current);
+    schemaBrowser.outputPattern(pattern, format);
     history.push(Object.assign({}, pattern));
     reset();
   }
