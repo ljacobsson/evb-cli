@@ -106,11 +106,36 @@ function saveTemplate() {
   );
 }
 
+function getSAMEvents(template) {
+  const events = [];
+  Object.keys(template.Resources).filter(
+    (f) => template.Resources[f].Type === "AWS::Serverless::Function" &&
+      template.Resources[f].Properties.Events &&
+      Object.keys(template.Resources[f].Properties.Events).forEach((e) => {
+        if (template.Resources[f].Properties.Events[e].Type ===
+          "EventBridgeRule" ||
+          template.Resources[f].Properties.Events[e].Type === "CloudWatchEvent") {
+          events.push({
+            name: `${e} -> ${f}`,
+            value: {
+              function: f,
+              event: e,
+              config: template.Resources[f].Properties.Events[e].Properties,
+            },
+          });
+        }
+      })
+  );
+  return events;
+}
+
 
 module.exports = {
   getFormattedResourceList,
   getLambdaFunctions,
+  getEventRules,
   load,
   injectPattern,
-  saveTemplate
+  saveTemplate,
+  getSAMEvents
 };

@@ -1,28 +1,7 @@
 const inputUtil = require("../shared/input-util");
 const templateParser = require("../shared/template-parser")
 async function extractSamDefinition(template) {
-  const events = [];
-  Object.keys(template.Resources).filter(
-    (f) =>
-      template.Resources[f].Type === "AWS::Serverless::Function" &&
-      template.Resources[f].Properties.Events &&
-      Object.keys(template.Resources[f].Properties.Events).forEach((e) => {
-        if (
-          template.Resources[f].Properties.Events[e].Type ===
-            "EventBridgeRule" ||
-          template.Resources[f].Properties.Events[e].Type === "CloudWatchEvent"
-        ) {
-          events.push({
-            name: `${e} -> ${f}`,
-            value: {
-              function: f,
-              event: e,
-              config: template.Resources[f].Properties.Events[e].Properties,
-            },
-          });
-        }
-      })
-  );
+  const events = templateParser.getSAMEvents(template);
 
   const extractEvent = await inputUtil.selectFrom(
     events,
@@ -90,3 +69,4 @@ async function extractSamDefinition(template) {
 module.exports = {
     extractSamDefinition
 }
+

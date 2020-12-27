@@ -50,6 +50,15 @@ async function* ListSchemas(schemas, params) {
 }
 
 async function getSchema(schemas) {
+  const { registry, schemaName, sourceName } = await getSchemaName(schemas);
+  const describeSchemaResponse = await schemas
+    .describeSchema({ RegistryName: registry.id, SchemaName: schemaName })
+    .promise();
+  const schema = JSON.parse(describeSchemaResponse.Content);
+  return { sourceName, schema };
+}
+
+async function getSchemaName(schemas) {
   const registry = await inputUtil.getRegistry(schemas);
   const schemaList = [];
   for await (schemaItem of ListSchemas(schemas, { RegistryName: registry.id })) {
@@ -61,11 +70,7 @@ async function getSchema(schemas) {
     sourceName
   );
   const schemaName = `${sourceName}@${detailTypeName}`.replace(/\//g, "-");
-  const describeSchemaResponse = await schemas
-    .describeSchema({ RegistryName: registry.id, SchemaName: schemaName })
-    .promise();
-  const schema = JSON.parse(describeSchemaResponse.Content);
-  return { sourceName, schema };
+  return { registry, schemaName, sourceName };
 }
 
 function findCurrent(path, schema) {
@@ -83,4 +88,5 @@ module.exports = {
   getSchema,
   outputPattern,
   findCurrent,
+  getSchemaName
 };

@@ -67,6 +67,28 @@ Options:
 ```
 Example event input can be found [here](tests/test-event.json) 
 
+## Generate code bindings
+```
+Usage: evb code-binding|cb [options]
+
+Generates code bindings from the schema registry based on the defined InputPath or InputTransformer
+
+Options:
+  -t, --template [template]       Path to template file
+  -n, --type-name [typeName]      Type name (default: "MyType")
+  -o, --output-file [outputFile]  Output file name. Writes to std out if skipped
+  -l, --language [language]       Output language
+  -h, --help                      output usage information
+```
+![Demo](https://github.com/mhlabs/evb-cli/raw/master/images/demo-codebinding.gif))
+
+
+If `--template` is provided, the tool will parse your template and generate code bindings that match the `InputPath` or `InputTransformer` that is defined.
+
+If no template is passed to the command, then you will get prompted to select a schema from the registry.
+
+This is using quicktype. See their docs for [target languages](https://github.com/quicktype/quicktype#target-languages)
+
 ## Replay events
 ```
 Usage: evb replay|r [options]

@@ -12,6 +12,7 @@ require("./src/commands/test-event");
 require("./src/commands/replay");
 require("./src/commands/replay-dead-letter");
 require("./src/commands/local");
+require("./src/commands/code-binding");
 
 program.version(package.version, "-v, --vers", "output the current version");
 
