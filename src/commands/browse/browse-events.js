@@ -1,6 +1,6 @@
 const patternBuilder = require("../shared/schema-browser");
 const inputUtil = require("../shared/input-util");
-
+const eventBridgeUtil = require("../shared/eventbridge-util");
 async function browseEvents(format, schemas, eventbridge) {
   while (true) {
     const { targets } = await getTargets(schemas);
@@ -43,33 +43,36 @@ async function getTargets(schemas) {
   const evb = new AWS.EventBridge();
   const eventBusName = await inputUtil.getEventBusName(evb);
   const targets = [];
-  const resp = await evb
-    .listRules({ EventBusName: eventBusName, Limit: 100 })
-    .promise();
-  for (const rule of resp.Rules) {
-    if (!rule.EventPattern) {
-      continue;
-    }
-    const pattern = JSON.parse(rule.EventPattern);
-    if (
-      pattern.source == sourceName &&
-      pattern["detail-type"] ==
-        schema.components.schemas.AWSEvent["x-amazon-events-detail-type"]
-    ) {
-      const targetResponse = await evb
-        .listTargetsByRule({
-          Rule: rule.Name,
-          EventBusName: eventBusName,
-        })
-        .promise();
-      for (const target of targetResponse.Targets) {
-        const arnSplit = target.Arn.split(":");
-        const service = arnSplit[2];
-        const name = arnSplit[arnSplit.length - 1];
-        targets.push({
-          name: `${service}: ${name}`,
-          value: { pattern, target },
-        });
+  for await (const ruleBatch of eventBridgeUtil.listRules(evb, {
+    EventBusName: eventBusName,
+    Limit: 100,
+  })) {
+    for (const rule of ruleBatch) {
+      if (!rule.EventPattern) {
+        continue;
+      }
+
+      const pattern = JSON.parse(rule.EventPattern);
+      if (
+        pattern.source == sourceName &&
+        pattern["detail-type"] ==
+          schema.components.schemas.AWSEvent["x-amazon-events-detail-type"]
+      ) {
+        const targetResponse = await evb
+          .listTargetsByRule({
+            Rule: rule.Name,
+            EventBusName: eventBusName,
+          })
+          .promise();
+        for (const target of targetResponse.Targets) {
+          const arnSplit = target.Arn.split(":");
+          const service = arnSplit[2];
+          const name = arnSplit[arnSplit.length - 1];
+          targets.push({
+            name: `${service}: ${name}`,
+            value: { pattern, target },
+          });
+        }
       }
     }
   }
@@ -77,5 +80,5 @@ async function getTargets(schemas) {
 }
 
 module.exports = {
-  browseEvents
-}
+  browseEvents,
+};

@@ -2,6 +2,7 @@ const fs = require("fs");
 const YAML = require("./yaml-wrapper");
 const AWS = require("aws-sdk");
 const inputUtil = require("./input-util");
+const inquirer = require("inquirer");
 
 let template;
 let format;
@@ -54,7 +55,10 @@ async function injectPattern(pattern) {
   if (!template) {
     return;
   }
-  const choices = [];
+  const choices = [
+    "Output to stdout",
+    new inquirer.Separator("Compatible resources:"),
+  ];
   const resources = [...getLambdaFunctions(), ...getEventRules()];
   for (const key of resources) {
     choices.push({
@@ -64,6 +68,14 @@ async function injectPattern(pattern) {
   }
 
   const resource = await inputUtil.selectFrom(choices, "Add pattern to", true);
+  if (resource === "Output to stdout") {
+    console.log(
+      format === "json"
+        ? JSON.stringify(pattern, null, 2)
+        : YAML.stringify(pattern)
+    );
+    return;
+  }
   if (resource.value.Type === "AWS::Serverless::Function") {
     const eventName = await inputUtil.text("Event name", "MyEvent");
     const eventBus = await inputUtil.getEventBusName(new AWS.EventBridge());
@@ -109,12 +121,15 @@ function saveTemplate() {
 function getSAMEvents(template) {
   const events = [];
   Object.keys(template.Resources).filter(
-    (f) => template.Resources[f].Type === "AWS::Serverless::Function" &&
+    (f) =>
+      template.Resources[f].Type === "AWS::Serverless::Function" &&
       template.Resources[f].Properties.Events &&
       Object.keys(template.Resources[f].Properties.Events).forEach((e) => {
-        if (template.Resources[f].Properties.Events[e].Type ===
-          "EventBridgeRule" ||
-          template.Resources[f].Properties.Events[e].Type === "CloudWatchEvent") {
+        if (
+          template.Resources[f].Properties.Events[e].Type ===
+            "EventBridgeRule" ||
+          template.Resources[f].Properties.Events[e].Type === "CloudWatchEvent"
+        ) {
           events.push({
             name: `${e} -> ${f}`,
             value: {
@@ -129,7 +144,6 @@ function getSAMEvents(template) {
   return events;
 }
 
-
 module.exports = {
   getFormattedResourceList,
   getLambdaFunctions,
@@ -137,5 +151,5 @@ module.exports = {
   load,
   injectPattern,
   saveTemplate,
-  getSAMEvents
+  getSAMEvents,
 };

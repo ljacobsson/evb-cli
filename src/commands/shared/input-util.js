@@ -123,9 +123,9 @@ async function getProperty(currentObject, objectArray) {
 }
 
 async function getDetailTypeName(schemas, sourceName) {
-  const detailTypes = schemas.filter((p) =>
-    p.SchemaName.startsWith(`${sourceName}@`)
-  ).map((p) => p.SchemaName.split("@")[1]);
+  const detailTypes = schemas
+    .filter((p) => p.SchemaName.startsWith(`${sourceName}@`))
+    .map((p) => p.SchemaName.split("@")[1]);
   const detailType = await prompt({
     name: "id",
     type: "list",
@@ -138,9 +138,7 @@ async function getDetailTypeName(schemas, sourceName) {
 }
 
 async function getSourceName(schemas) {
-  const sources = [
-    ...new Set(schemas.map((p) => p.SchemaName.split("@")[0])),
-  ];
+  const sources = [...new Set(schemas.map((p) => p.SchemaName.split("@")[0]))];
   const source = await prompt({
     name: "id",
     type: "list",
@@ -187,9 +185,14 @@ async function multiSelectFrom(list, message, skipBack) {
 
 async function getEventBusName(eventbridge) {
   const eventBusesResponse = await eventbridge.listEventBuses().promise();
-  const eventBuses = [
+  let eventBuses = [
     ...new Set(eventBusesResponse.EventBuses.map((p) => p.Name)),
   ];
+  
+  if (process.env.EVB_DEMO_MODE) {
+    eventBuses= ["default", "examplebus"];
+  }
+
   const eventBusName = await prompt({
     name: "id",
     type: "list",

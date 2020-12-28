@@ -7,6 +7,8 @@ const tempDirectory = require("temp-dir");
 const { Spinner } = require("cli-spinner");
 const websocket = require("../local/listeners/websocket");
 const spinner = new Spinner();
+const eventBridgeUtil = require("../shared/eventbridge-util");
+
 require("@mhlabs/aws-sdk-sso");
 const cfnTag = "aws:cloudformation:stack-name";
 let eventBridge = new AWS.EventBridge();
@@ -22,7 +24,7 @@ function initApis() {
   stepFunctions = new AWS.StepFunctions();
   sns = new AWS.SNS();
   sqs = new AWS.SQS();
-  kinesis = new AWS.Kinesis();  
+  kinesis = new AWS.Kinesis();
 }
 
 const describeMap = {
@@ -85,15 +87,18 @@ async function build(busName) {
   let nodes = [];
   let edges = [];
   let resourceTags = [];
-  const rules = await eventBridge
-    .listRules({ EventBusName: busName })
-    .promise();
-  const count = rules.Rules.length;
   let i = 0;
   const spinner = new Spinner();
   spinner.setSpinnerString("⠁⠁⠉⠙⠚⠒⠂⠂⠒⠲⠴⠤⠄⠄⠤⠠⠠⠤⠦⠖⠒⠐⠐⠒⠓⠋⠉⠈⠈");
   spinner.start();
-  for (const rule of rules.Rules) {
+  const rules = [];
+  for await (const ruleBatch of eventBridgeUtil.listRules(eventBridge, {
+    EventBusName: busName,
+  })) {
+    rules.push(...ruleBatch);
+  }
+  const count = rules.length;
+  for (const rule of rules) {
     spinner.setSpinnerTitle(`${Math.ceil((i++ / count) * 100)}%`);
     const targets = await eventBridge
       .listTargetsByRule({ EventBusName: busName, Rule: rule.Name })
@@ -139,7 +144,11 @@ async function build(busName) {
                   to: targetName,
                   label: pattern["detail-type"][0],
                   title: `<pre>${JSON.stringify(pattern, null, 2)}<pre>`,
-                  rule: { EventBusName: rule.EventBusName, EventPattern: rule.EventPattern, Target: target },
+                  rule: {
+                    EventBusName: rule.EventBusName,
+                    EventPattern: rule.EventPattern,
+                    Target: target,
+                  },
                 });
               }
             }
