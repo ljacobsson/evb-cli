@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "CodePipelinePipelineExecutionStateChange",
+  "definitions": {
+    "CodePipelinePipelineExecutionStateChange": {
+      "properties": {
+        "execution-id": {
+          "type": "string"
+        },
+        "execution-trigger": {
+          "properties": {
+            "trigger-detail": {
+              "type": "string"
+            },
+            "trigger-type": {
+              "type": "string"
+            }
+          },
+          "required": ["trigger-type", "trigger-detail"],
+          "type": "object"
+        },
+        "pipeline": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": ["pipeline", "execution-id", "state", "version"],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "account": {
+      "type": "string"
+    },
+    "detail": {
+      "$ref": "#/definitions/CodePipelinePipelineExecutionStateChange"
+    },
+    "detail-type": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "region": {
+      "type": "string"
+    },
+    "resources": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "source": {
+      "type": "string"
+    },
+    "time": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    }
+  },
+  "required": ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"],
+  "type": "object",
+  "x-amazon-events-detail-type": "CodePipeline Pipeline Execution State Change",
+  "x-amazon-events-source": "aws.codepipeline"
+}

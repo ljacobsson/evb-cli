@@ -160,11 +160,17 @@ async function generateType(cmd, schema) {
     })
   ).lines.join("\n");
 
-  fs.writeFileSync(cmd.outputFile, output);
+  if (cmd.outputFile) {
+    fs.writeFileSync(cmd.outputFile, output);
+  } else {
+    console.log(output);
+  }
 }
 
 module.exports = {
   loadFromTemplate,
   loadFromRegistry,
   getLanguageInput,
+  generateSchemaForInputPath,
+  generateSchemaForTransform,
 };
