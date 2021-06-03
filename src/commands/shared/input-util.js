@@ -6,6 +6,11 @@ if (!process.stdout.getWindowSize) {
 }
 
 const inquirer = require("inquirer");
+inquirer.registerPrompt(
+  "autocomplete",
+  require("inquirer-autocomplete-prompt")
+);
+
 const prompt = inquirer.createPromptModule();
 const datePrompt = require("date-prompt");
 
@@ -104,17 +109,19 @@ async function getStringValue(fieldName, type) {
 
 async function getProperty(currentObject, objectArray) {
   let fieldList = Object.keys(currentObject.properties);
-  const property = await prompt({
+  const choices = [
+    ...(objectArray.length ? backNavigation : doneNavigation),
+    ...fieldList,
+  ];
+  const property = await inquirer.prompt({
     name: "id",
-    type: "list",
+    type: "autocomplete",
     message: `Add ${
       objectArray[objectArray.length - 1] ||
       currentObject["x-amazon-events-detail-type"]
     } item`,
-    choices: [
-      ...(objectArray.length ? backNavigation : doneNavigation),
-      ...fieldList,
-    ],
+    choices: choices,
+    source: sourceAutocomplete(choices)
   });
   objectArray.push(property.id);
   const chosenProp = currentObject.properties[property.id];
@@ -126,11 +133,12 @@ async function getDetailTypeName(schemas, sourceName) {
   const detailTypes = schemas
     .filter((p) => p.SchemaName.startsWith(`${sourceName}@`))
     .map((p) => p.SchemaName.split("@")[1]);
-  const detailType = await prompt({
+  const detailType = await inquirer.prompt({
     name: "id",
-    type: "list",
+    type: "autocomplete",
     message: "Select detail-type",
     choices: detailTypes,
+    source: sourceAutocomplete(detailTypes),
   });
 
   const detailTypeName = detailType.id;
@@ -139,14 +147,29 @@ async function getDetailTypeName(schemas, sourceName) {
 
 async function getSourceName(schemas) {
   const sources = [...new Set(schemas.map((p) => p.SchemaName.split("@")[0]))];
-  const source = await prompt({
+  const source = await inquirer.prompt({
     name: "id",
-    type: "list",
+    type: "autocomplete",
     message: "Select source",
     choices: sources,
+    source: sourceAutocomplete(sources),
   });
   const sourceName = source.id;
   return sourceName;
+}
+
+function sourceAutocomplete(sources) {
+  return function (answersYet, input) {
+    if (!input) {
+      return sources;
+    }
+    const split = input.split(" ");
+    return sources.filter(
+      (p) => !p ||
+        split.filter((f) => typeof(p) === "string" && p.toLowerCase().includes(f.toLowerCase()))
+          .length === split.length
+    );
+  };
 }
 
 async function getRegistry(schemas) {
@@ -164,11 +187,13 @@ async function getRegistry(schemas) {
 }
 
 async function selectFrom(list, message, skipBack) {
-  const answer = await prompt({
+  const choices = [!skipBack ? BACK : null, ...list].filter((p) => p);
+  const answer = await inquirer.prompt({
     name: "id",
-    type: "list",
+    type: "autocomplete",
     message: message || "Please select",
-    choices: [!skipBack ? BACK : null, ...list].filter((p) => p),
+    choices: choices,
+    source: sourceAutocomplete(choices),
   });
   return answer.id;
 }
@@ -188,9 +213,9 @@ async function getEventBusName(eventbridge) {
   let eventBuses = [
     ...new Set(eventBusesResponse.EventBuses.map((p) => p.Name)),
   ];
-  
+
   if (process.env.EVB_DEMO_MODE) {
-    eventBuses= ["default", "examplebus"];
+    eventBuses = ["default", "examplebus"];
   }
 
   const eventBusName = await prompt({
