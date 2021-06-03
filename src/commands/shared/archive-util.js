@@ -110,10 +110,10 @@ async function createAndExecute(
       sfTarget.Arn = `arn:aws:states:${AWS.config.region}:${accountId}:stateMachine:evb-cli-paced-replays`;
       sfRule.Name = `${name}-sf`;
       delete sfRule.Arn;
-      sfRule.RoleArn = `arn:aws:iam::${accountId}:role/evb-cli-eventbridge-to-stepfunctions`;
+      sfRule.RoleArn = `arn:aws:iam::${accountId}:role/evb-cli-eventbridge-to-stepfunctions-${AWS.config.region}`;
       const evbSFRuleResponse = await eventBridge.putRule(sfRule).promise();
 
-      sfTarget.RoleArn = `arn:aws:iam::${accountId}:role/evb-cli-eventbridge-to-stepfunctions`;
+      sfTarget.RoleArn = `arn:aws:iam::${accountId}:role/evb-cli-eventbridge-to-stepfunctions-${AWS.config.region}`;
 
       await eventBridge
         .putTargets({

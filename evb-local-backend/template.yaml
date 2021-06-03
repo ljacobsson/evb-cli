@@ -327,7 +327,7 @@ Resources:
   EventToStepFunctionsRole:
     Type: 'AWS::IAM::Role'
     Properties:
-      RoleName: evb-cli-eventbridge-to-stepfunctions
+      RoleName: !Sub evb-cli-eventbridge-to-stepfunctions-${AWS::Region}
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:

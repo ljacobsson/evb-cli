@@ -215,7 +215,7 @@ async function getEventBusName(eventbridge) {
   ];
 
   if (process.env.EVB_DEMO_MODE) {
-    eventBuses = ["default", "examplebus"];
+    eventBuses = ["default", "custombus"];
   }
 
   const eventBusName = await prompt({
