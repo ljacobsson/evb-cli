@@ -1,0 +1,305 @@
+<html lang="en" data-reactroot="">
+
+<head>
+    <meta charSet="utf-8" />
+    <title>evb-cli</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Pattern generator and debugging tool for EventBridge" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="evb-cli" />
+    <meta property="og:description" content="Pattern generator and debugging tool for EventBridge" />
+    <meta property="og:image" content="https://avatars.githubusercontent.com/u/22922746?s=400&amp;v=4" />
+    <meta property="og:image:alt" content="Gitpages" />
+    <meta property="og:image:width" content="800" />
+    <meta property="og:image:height" content="600" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:site_name" content="Gitpages" />
+    <link rel="icon" type="image/png" href="http://gitpages.app/favicon-32x32.png" />
+    <style>
+        #ReactMarkdown pre {
+            background: #1e1e1e;
+            padding: 0;
+            margin: 0;
+            border-radius: 10px;
+        }
+
+        .image-slant-right {
+            /* width: 40%; */
+            margin-bottom: 0px;
+            -webkit-transform: perspective(1500px) rotateY(15deg);
+            -moz-transform: perspective(1500px) rotateY(-15deg);
+            -ms-transform: perspective(1500px) rotateY(-15deg);
+            transform: perspective(1500px) rotateY(-15deg);
+            transition: transform 1s;
+        }
+
+        .image-slant-left {
+            /* width: 40%; */
+            margin-bottom: 0px;
+            -webkit-transform: perspective(1500px) rotateY(15deg);
+            -moz-transform: perspective(1500px) rotateY(15deg);
+            -ms-transform: perspective(1500px) rotateY(15deg);
+            transform: perspective(1500px) rotateY(15deg);
+            box-shadow: 1px 25px 20px #c6ced8;
+            transition: transform 1s;
+        }
+
+        .image-slant-right:hover {
+            -webkit-transform: perspective(1500px) rotateY(-5deg);
+            -moz-transform: perspective(1500px) rotateY(-5deg);
+            -ms-transform: perspective(1500px) rotateY(-5deg);
+            transform: perspective(1500px) rotateY(-5deg);
+        }
+
+        .image-slant-left:hover {
+            -webkit-transform: perspective(1500px) rotateY(5deg);
+            -moz-transform: perspective(1500px) rotateY(5deg);
+            -ms-transform: perspective(1500px) rotateY(5deg);
+            transform: perspective(1500px) rotateY(5deg);
+        }
+
+        @media (max-width: 1024px) {
+
+            .image-slant-left,
+            .image-slant-right {
+                -webkit-transform: perspective(1500px) rotateY(0deg);
+                -moz-transform: perspective(1500px) rotateY(0deg);
+                -ms-transform: perspective(1500px) rotateY(0deg);
+                transform: perspective(1500px) rotateY(0deg);
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/@tailwindcss/typography@0.2.x/dist/typography.min.css" />
+</head>
+
+<body>
+    <main>
+        <div class="animate">
+            <div class="bg-white">
+                <header class="bg-pink-700">
+                    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Top">
+                        <div class="w-full py-3 flex items-center justify-between lg:border-none">
+                            <div class="flex items-center"><span class="text-sm sm:text-base  text-white hover:text-blue-50 font-bold tracking-wide">evb-cli</span>
+                                <div class="hidden ml-10 space-x-8 lg:block"></div>
+                            </div>
+                            <div class="ml-10 space-x-4"><a href="https://github.com/mhlabs/evb-cli" class="inline-block bg-white py-2 px-4 border text-center border-transparent rounded-md text-xs sm:text-base font-medium text-blue-600 hover:bg-blue-50">View on GitHub</a></div>
+                        </div>
+                    </nav>
+                </header>
+                <div class="pt-8 bg-white">
+                    <div class="mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6">
+                        <div class="text-center">
+                            <h1 class="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl"><span class="block">Pattern generator and debugging tool for EventBridge</span></h1>
+                            <p class="max-w-md mt-8 mx-auto text-base text-gray-500 sm:text-lg mt-2 md:text-xl md:max-w-3xl">An open source tool to help you with AWS EventBridge</p>
+                            <div class="sm:space-x-4 sm:flex sm:justify-center my-10 space-y-1 sm:space-y-0"><a href="https://github.com/mhlabs/evb-cli" class="block w-full sm:w-auto text-center  px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">Get Started</a><button type="button" class="bg-gray-50 w-full md:w-auto text-gray-400 hover:text-blue-500 font-mono  py-3 sm:px-6  border border-gray-200 rounded-md flex items-center justify-center space-x-2 sm:space-x-4 focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-gray-300 focus:outline-none transition-colors duration-200" id="copy-command-to-clipboard"><span class="text-black-900"><span class="hidden sm:inline text-pink-500" aria-hidden="true">$
+                                            <!-- -->
+                                        </span><span id="command" class="text-gray-700 px-4 md:px-0 text-xs md:text-base">npm install -g @mhlabs/evb-cli</span></span><span class="sr-only">(click to copy to clipboard)</span><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path d="M8 16c0 1.886 0 2.828.586 3.414C9.172 20 10.114 20 12 20h4c1.886 0 2.828 0 3.414-.586C20 18.828 20 17.886 20 16v-4c0-1.886 0-2.828-.586-3.414C18.828 8 17.886 8 16 8m-8 8h4c1.886 0 2.828 0 3.414-.586C16 14.828 16 13.886 16 12V8m-8 8c-1.886 0-2.828 0-3.414-.586C4 14.828 4 13.886 4 12V8c0-1.886 0-2.828.586-3.414C5.172 4 6.114 4 8 4h4c1.886 0 2.828 0 3.414.586C16 5.172 16 6.114 16 8"></path>
+                                    </svg></button></div>
+                            <div class="flex justify-center mt-6  space-x-2"><a href="https://gitpages.app" target="_blank"><img src="https://img.shields.io/badge/Made%20by-Gitpages-red" alt="Made by" /></a><a href="https://aws.amazon.com/eventbridge/" target="_blank"><img src="https://img.shields.io/badge/AWS-EventBridge-pink" alt="AWS" /></a></div>
+                        </div>
+                    </div>
+                    <div class="relative mt-10">
+                        <div class="absolute inset-0 flex flex-col" aria-hidden="true">
+                            <div class="flex-1"></div>
+                            <div class="flex-1 w-full bg-gray-800"></div>
+                        </div>
+                        <div class="max-w-7xl mx-auto px-4 sm:px-6"><img class="relative rounded-lg shadow-lg mx-auto" src="https://images.unsplash.com/photo-1595623654300-b27329804025?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&amp;ixlib=rb-1.2.1&amp;auto=format&amp;fit=crop&amp;w=1650&amp;q=80" data-aos="zoom-out" data-aos-offset="200" data-aos-duration="1000" /></div>
+                    </div>
+                </div>
+                <div class="py-12 bg-gray-800">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="lg:text-center">
+                            <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-200 sm:text-4xl text-center">evb-cli Features</p>
+                        </div>
+                        <div class="mt-20 pb-20">
+                            <dl class="space-y-10 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-20">
+                                <div class="relative" data-aos="fade-up" data-aos-offset="100" data-aos-duration="1000" data-aos-delay="400.01">
+                                    <dt>
+                                        <div class="absolute flex items-center justify-center h-12 w-12 rounded-md bg-pink-500 text-white"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-6 w-6" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                                            </svg></div>
+                                        <p class="ml-16 text-lg leading-6 font-medium text-gray-200">Generate Code Bindings</p>
+                                    </dt>
+                                    <dd class="mt-2 ml-16 text-base text-gray-400">Generates code bindings from the schema registry based on the defined InputPath or InputTransformer</dd>
+                                </div>
+                                <div class="relative" data-aos="fade-up" data-aos-offset="100" data-aos-duration="1000" data-aos-delay="401.01">
+                                    <dt>
+                                        <div class="absolute flex items-center justify-center h-12 w-12 rounded-md bg-pink-500 text-white"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-6 w-6" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                            </svg></div>
+                                        <p class="ml-16 text-lg leading-6 font-medium text-gray-200">Replay Events</p>
+                                    </dt>
+                                    <dd class="mt-2 ml-16 text-base text-gray-400">Starts a replay of events against a specific destination</dd>
+                                </div>
+                                <div class="relative" data-aos="fade-up" data-aos-offset="100" data-aos-duration="1000" data-aos-delay="402.01">
+                                    <dt>
+                                        <div class="absolute flex items-center justify-center h-12 w-12 rounded-md bg-pink-500 text-white"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-6 w-6" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                                            </svg></div>
+                                        <p class="ml-16 text-lg leading-6 font-medium text-gray-200">Interactive Diagram</p>
+                                    </dt>
+                                    <dd class="mt-2 ml-16 text-base text-gray-400">generate an interactive diagram over the event rules of an eventbus</dd>
+                                </div>
+                                <div class="relative" data-aos="fade-up" data-aos-offset="100" data-aos-duration="1000" data-aos-delay="403.01">
+                                    <dt>
+                                        <div class="absolute flex items-center justify-center h-12 w-12 rounded-md bg-pink-500 text-white"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-6 w-6" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                                            </svg></div>
+                                        <p class="ml-16 text-lg leading-6 font-medium text-gray-200">Open Source</p>
+                                    </dt>
+                                    <dd class="mt-2 ml-16 text-base text-gray-400">Free for the world!</dd>
+                                </div>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+                <div class="relative py-16 bg-white overflow-hidden" data-aos="fade-up" data-aos-offset="50" data-aos-duration="500" data-aos-delay="200">
+                    <div class="relative px-4 sm:px-6 lg:px-8">
+                        <div class="text-lg max-w-prose mx-auto">
+                            <h1><span class="mt-2 block text-3xl text-center leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl"></span></h1>
+                        </div>
+                        <div class="mt-6 prose prose-indigo prose-lg text-gray-500 mx-auto ReactMarkdown" id="ReactMarkdown">
+                            <h2>Usage</h2>
+                            <p><strong>evb pattern</strong> - Will prompt you with a wizard that helps you build pattern for event matching. This is using EventBridge&#x27;s schema registry (currently in preview) to let you navigate the schema you want to react on.</p>
+                            <p>For AWS events, such as aws.codepipeline it&#x27;s already enabled, but for custom events you will have to enable it in the AWS Management Console.</p>
+                            <p><img src="https://github.com/mhlabs/evb-cli/raw/master/images/demo.gif" alt="Demo" /></p>
+                            <h3>To generate an EventBridge InputTransformer object:</h3>
+                            <p><a href="https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-input-transformer-tutorial.html">Input transformers</a> are useful when you only want a small portion of the event sent to your target. This command helps you navigate the JSON payload and generate the <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-events-rule-inputtransformer.html">InputTransformer CloudFormation object</a></p>
+                            <p><strong>evb input</strong> will prompt you with a wizard that helps you build the InputTransformer object. This is using EventBridge&#x27;s schema registry (currently in preview).</p>
+                            <p><img src="https://github.com/mhlabs/evb-cli/raw/master/images/demo-input.gif" alt="Demo" /></p>
+                            <p><a href="https://github.com/mhlabs/evb-cli/blob/master/README.md">Read more features over on the GitHub Repo →.</a></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-pink-800">
+                    <div class="max-w-7xl mx-auto py-12 px-4 sm:py-16 sm:px-6 lg:px-8 lg:py-20">
+                        <dl class="text-center sm:max-w-3xl sm:mx-auto sm:grid sm:grid-cols-3 sm:gap-8">
+                            <div class="flex flex-col" data-aos="flip-left" data-aos-offset="100" data-aos-duration="1000" data-aos-delay="200">
+                                <dt class="order-2 mt-2 text-lg leading-6 font-medium text-pink-200 mb-10 sm:mb-0">Open Source</dt>
+                                <dd class="order-1 text-4xl sm:text-5xl font-extrabold text-white">100%</dd>
+                            </div>
+                            <div class="flex flex-col" data-aos="flip-left" data-aos-offset="100" data-aos-duration="1000" data-aos-delay="350">
+                                <dt class="order-2 mt-2 text-lg leading-6 font-medium text-pink-200 mb-10 sm:mb-0">Stars ⭐️</dt>
+                                <dd class="order-1 text-4xl sm:text-5xl font-extrabold text-white">90+</dd>
+                            </div>
+                            <div class="flex flex-col" data-aos="flip-left" data-aos-offset="100" data-aos-duration="1000" data-aos-delay="500">
+                                <dt class="order-2 mt-2 text-lg leading-6 font-medium text-pink-200 mb-10 sm:mb-0">Langugage</dt>
+                                <dd class="order-1 text-4xl sm:text-5xl font-extrabold text-white">JavaScript</dd>
+                            </div>
+                        </dl>
+                    </div>
+                </div>
+                <div class="bg-white">
+                    <div class="mx-auto py-12 px-4 max-w-7xl sm:px-6 lg:px-8 lg:py-24">
+                        <div class="grid grid-cols-1 gap-12 lg:grid-cols-3 lg:gap-8">
+                            <div class="space-y-5 sm:space-y-4">
+                                <h2 class="text-3xl font-extrabold tracking-tight sm:text-4xl text-gray-800">Meet the project contributors</h2>
+                                <p class="text-xl text-gray-500">This project is built and maintained from people all over the world 🌎</p>
+                            </div>
+                            <div class="lg:col-span-2">
+                                <ul class="space-y-12 sm:grid sm:grid-cols-2 sm:gap-12 sm:space-y-0 lg:gap-x-8">
+                                    <li data-aos="fade-up" data-aos-offset="100" data-aos-duration="1000" data-aos-delay="200">
+                                        <div class="flex items-center space-x-4 lg:space-x-6"><img class="w-16 h-16 rounded-full lg:w-20 lg:h-20" src="https://avatars.githubusercontent.com/u/7579097?u=001b8c82f9e6b3fca2114a89eec07255704eb8d5&amp;v=4" alt="" />
+                                            <div class="font-medium text-lg leading-6 space-y-1">
+                                                <h3 class="text-gray-900">Lars Jacobsson</h3>
+                                                <p class="text-pink-600"></p>
+                                                <ul class="flex space-x-5 mt-5">
+                                                    <li><a href="https://twitter.com/lajacobsson" class="text-gray-400 hover:text-gray-500"><span class="sr-only">Twitter</span><svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path d="M6.29 18.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0020 3.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.073 4.073 0 01.8 7.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 010 16.407a11.616 11.616 0 006.29 1.84"></path>
+                                                            </svg></a></li>
+                                                    <li><a href="https://github.com/ljacobsson" class="text-gray-400 hover:text-gray-500"><span class="sr-only">LinkedIn</span><svg class="h-5 w-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fill-rule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clip-rule="evenodd"></path>
+                                                            </svg></a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li data-aos="fade-up" data-aos-offset="100" data-aos-duration="1000" data-aos-delay="350">
+                                        <div class="flex items-center space-x-4 lg:space-x-6"><img class="w-16 h-16 rounded-full lg:w-20 lg:h-20" src="https://avatars.githubusercontent.com/u/3340292?u=346a77f6c2699e2139ca1358d99364c575de0b96&amp;v=4" alt="" />
+                                            <div class="font-medium text-lg leading-6 space-y-1">
+                                                <h3 class="text-gray-900">Heitor Lessa</h3>
+                                                <p class="text-pink-600">Principal Solutions Architect, Developer Acceleration (DevAx) @ AWS</p>
+                                                <ul class="flex space-x-5 mt-5">
+                                                    <li><a href="https://twitter.com/heitor_lessa" class="text-gray-400 hover:text-gray-500"><span class="sr-only">Twitter</span><svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path d="M6.29 18.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0020 3.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.073 4.073 0 01.8 7.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 010 16.407a11.616 11.616 0 006.29 1.84"></path>
+                                                            </svg></a></li>
+                                                    <li><a href="https://github.com/heitorlessa" class="text-gray-400 hover:text-gray-500"><span class="sr-only">LinkedIn</span><svg class="h-5 w-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fill-rule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clip-rule="evenodd"></path>
+                                                            </svg></a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li data-aos="fade-up" data-aos-offset="100" data-aos-duration="1000" data-aos-delay="500">
+                                        <div class="flex items-center space-x-4 lg:space-x-6"><img class="w-16 h-16 rounded-full lg:w-20 lg:h-20" src="https://avatars.githubusercontent.com/u/47321885?u=2d0b4456a07ba26c75dcae500886536df7ef0ea5&amp;v=4" alt="" />
+                                            <div class="font-medium text-lg leading-6 space-y-1">
+                                                <h3 class="text-gray-900">Raywon Kari</h3>
+                                                <p class="text-pink-600"></p>
+                                                <ul class="flex space-x-5 mt-5">
+                                                    <li><a href="https://twitter.com/raywonkari" class="text-gray-400 hover:text-gray-500"><span class="sr-only">Twitter</span><svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path d="M6.29 18.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0020 3.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.073 4.073 0 01.8 7.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 010 16.407a11.616 11.616 0 006.29 1.84"></path>
+                                                            </svg></a></li>
+                                                    <li><a href="https://github.com/raywonkari" class="text-gray-400 hover:text-gray-500"><span class="sr-only">LinkedIn</span><svg class="h-5 w-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fill-rule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clip-rule="evenodd"></path>
+                                                            </svg></a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-pink-800">
+                    <div class="max-w-7xl mx-auto text-center py-12 px-4 sm:px-6 lg:py-16 lg:px-8" data-aos="zoom-out" data-aos-offset="150" data-aos-duration="450" data-aos-delay="200">
+                        <h2 class="text-3xl  tracking-tight text-gray-200 sm:text-4xl"><span class="block font-extrabold">Get started today</span></h2><button type="button" class="bg-gray-50 hidden sm:flex mx-auto mt-4 w-full md:w-auto text-gray-400 hover:text-blue-500 font-mono  py-3 sm:px-6  border border-gray-200 rounded-md items-center justify-center space-x-2 sm:space-x-4 focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-gray-300 focus:outline-none transition-colors duration-200" data-js="copy-button"><span class="text-black-900"><span class="hidden sm:inline text-pink-500" aria-hidden="true">$
+                                    <!-- -->
+                                </span><span data-js="copy-button-value" class="text-gray-700 px-4 md:px-0 text-xs md:text-base">npm install -g @mhlabs/evb-cli</span></span><span class="sr-only">(click to copy to clipboard)</span><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M8 16c0 1.886 0 2.828.586 3.414C9.172 20 10.114 20 12 20h4c1.886 0 2.828 0 3.414-.586C20 18.828 20 17.886 20 16v-4c0-1.886 0-2.828-.586-3.414C18.828 8 17.886 8 16 8m-8 8h4c1.886 0 2.828 0 3.414-.586C16 14.828 16 13.886 16 12V8m-8 8c-1.886 0-2.828 0-3.414-.586C4 14.828 4 13.886 4 12V8c0-1.886 0-2.828.586-3.414C5.172 4 6.114 4 8 4h4c1.886 0 2.828 0 3.414.586C16 5.172 16 6.114 16 8"></path>
+                            </svg></button>
+                        <div class="mt-8 flex justify-center">
+                            <div class="inline-flex rounded-md shadow"><a href="https://github.com/mhlabs/evb-cli" class="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-pink-600 hover:bg-pink-700">View on GitHub</a></div>
+                            <div class="ml-3 inline-flex"><a href="https://github.com/mhlabs/evb-cli" class="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-gray-700 bg-pink-100 hover:bg-pink-200">View Releases</a></div>
+                        </div>
+                    </div>
+                </div>
+                <footer class="bg-white">
+                    <div class="max-w-7xl mx-auto py-12 px-4 overflow-hidden sm:px-6 lg:px-8">
+                        <nav class="-mx-5 -my-2 flex flex-wrap justify-center" aria-label="Footer"></nav>
+                        <div class="mt-8 flex justify-center space-x-6"></div>
+                        <p class="mt-8 text-center text-base text-gray-400">evb-cli is built by undefined. Open Source and Free for the world.</p>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </main>
+</body>
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="text/javascript">
+    AOS.init({
+        once: true
+    });
+</script>
+<script type="text/javascript">
+    window.addEventListener('load', (event) => {
+        document.querySelectorAll("[data-js='copy-code']").forEach(code =>
+            code.addEventListener("click", (event) => {
+                const content = event.target.closest('div').textContent;
+                navigator.clipboard.writeText(content);
+            })
+        )
+
+        document.querySelectorAll("[data-js='copy-button']").forEach(button =>
+            button.addEventListener("click", (event) => {
+                const content = event.target.closest("[data-js='copy-button-value']").textContent;
+                navigator.clipboard.writeText(content);
+            })
+        )
+    });
+</script>
+
+</html>
