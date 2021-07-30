@@ -106,6 +106,9 @@ Pass a URL to OpenAPI specification of an API and the tool will generate SAM tem
 
 Supports OpenAPI 2 and 3.
 
+![Demo](https://github.com/mhlabs/evb-cli/raw/master/images/demo-api.gif))
+
+_Example of creating a an API Destination that posts codepipeline status updates to Slack_
 ## Replay events
 ```
 Usage: evb replay|r [options]
