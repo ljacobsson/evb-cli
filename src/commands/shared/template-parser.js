@@ -7,7 +7,7 @@ const inquirer = require("inquirer");
 let template;
 let format;
 let templatePath;
-function load(filePath) {
+function load(filePath, muteError) {
   templatePath = filePath;
   try {
     const templateFile = fs.readFileSync(filePath);
@@ -25,9 +25,11 @@ function load(filePath) {
       console.log(err.message);
     }
   } catch (err) {
-    console.log(
-      `Could not find ${filePath}. Will write pattern to stdout. Use -t <path to CloudFormation template to write to template>`
-    );
+    if (!muteError) {
+      console.log(
+        `Could not find ${filePath}. Will write pattern to stdout. Use -t <path to CloudFormation template to write to template>`
+      );
+    }
   }
 }
 
@@ -110,10 +112,12 @@ async function injectPattern(pattern) {
 }
 
 function saveTemplate() {
+  const replacer = (key, value) =>
+  typeof value === 'undefined' ? null : value;
   fs.writeFileSync(
     templatePath,
     format === "json"
-      ? JSON.stringify(template, null, 2)
+      ? JSON.stringify(template, replacer, 2)
       : YAML.stringify(template)
   );
 }
@@ -144,6 +148,10 @@ function getSAMEvents(template) {
   return events;
 }
 
+function templateFormat() {
+  return format;
+}
+
 module.exports = {
   getFormattedResourceList,
   getLambdaFunctions,
@@ -152,4 +160,5 @@ module.exports = {
   injectPattern,
   saveTemplate,
   getSAMEvents,
+  templateFormat,
 };

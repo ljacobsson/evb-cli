@@ -1,6 +1,6 @@
 const inputUtil = require("./input-util");
 const YAML = require("json-to-pretty-yaml");
-
+const AWS = require("aws-sdk");
 function isObject(item) {
   return item && typeof item === "object" && !Array.isArray(item);
 }
@@ -35,7 +35,6 @@ function outputPattern(output, format) {
 async function* ListSchemas(schemas, params) {
   let token;
   do {
-   
     const response = await schemas
       .listSchemas({
         ...params,
@@ -61,7 +60,9 @@ async function getSchema(schemas) {
 async function getSchemaName(schemas) {
   const registry = await inputUtil.getRegistry(schemas);
   const schemaList = [];
-  for await (schemaItem of ListSchemas(schemas, { RegistryName: registry.id })) {
+  for await (schemaItem of ListSchemas(schemas, {
+    RegistryName: registry.id,
+  })) {
     schemaList.push(...schemaItem);
   }
   const sourceName = await inputUtil.getSourceName(schemaList);
@@ -83,10 +84,24 @@ function findCurrent(path, schema) {
   return current;
 }
 
+async function getForPattern(pattern) {
+  const schemas = new AWS.Schemas();
+  const registry = await inputUtil.getRegistry(schemas);
+  const params = {
+    SchemaName: `${pattern.source[0]}@${pattern["detail-type"][0].replace(/ /g, "")}`,
+    RegistryName: registry.id,
+  };
+  const schema = await schemas
+    .describeSchema(params)
+    .promise();
+  return schema;
+}
+
 module.exports = {
   deepMerge,
   getSchema,
   outputPattern,
   findCurrent,
-  getSchemaName
+  getSchemaName,
+  getForPattern
 };

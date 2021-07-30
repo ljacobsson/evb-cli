@@ -121,7 +121,7 @@ async function getProperty(currentObject, objectArray) {
       currentObject["x-amazon-events-detail-type"]
     } item`,
     choices: choices,
-    source: sourceAutocomplete(choices)
+    source: sourceAutocomplete(choices),
   });
   objectArray.push(property.id);
   const chosenProp = currentObject.properties[property.id];
@@ -163,11 +163,16 @@ function sourceAutocomplete(sources) {
     if (!input) {
       return sources;
     }
+
     const split = input.split(" ");
     return sources.filter(
-      (p) => !p ||
-        split.filter((f) => typeof(p) === "string" && p.toLowerCase().includes(f.toLowerCase()))
-          .length === split.length
+      (p) =>
+        !p ||
+        split.filter(
+          (f) =>
+            typeof p === "string" && p.toLowerCase().includes(f.toLowerCase())
+            || p.name.toLowerCase().includes(f.toLowerCase())
+        ).length === split.length
     );
   };
 }
@@ -186,11 +191,11 @@ async function getRegistry(schemas) {
   return registry;
 }
 
-async function selectFrom(list, message, skipBack) {
+async function selectFrom(list, message, skipBack, type = "autocomplete") {
   const choices = [!skipBack ? BACK : null, ...list].filter((p) => p);
   const answer = await inquirer.prompt({
     name: "id",
-    type: "autocomplete",
+    type: type,
     message: message || "Please select",
     choices: choices,
     source: sourceAutocomplete(choices),

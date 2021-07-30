@@ -12,3 +12,5 @@ function initAuth(cmd) {
   module.exports = {
       initAuth
   }
+
+  

@@ -89,6 +89,23 @@ If no template is passed to the command, then you will get prompted to select a 
 
 This is using quicktype. See their docs for [target languages](https://github.com/quicktype/quicktype#target-languages)
 
+## Generate API Destinations resources
+```
+Usage: evb api-destination|api [options]
+
+Generates API Destination SAM template resources
+
+Options:
+  -t, --template [template]  Path to template file (default: "template.yaml")
+  -p, --profile [profile]    AWS profile to use
+  --region [region]          The AWS region to use. Falls back on AWS_REGION environment variable if not specified
+  -u --url [url]             URL to OpenAPI specification of API
+```
+
+Pass a URL to OpenAPI specification of an API and the tool will generate SAM template resources for API Destination resources. It will guide you through the third party OpenAPI schema and let you build mappings between their parameters and your event payload.
+
+Supports OpenAPI 2 and 3.
+
 ## Replay events
 ```
 Usage: evb replay|r [options]
