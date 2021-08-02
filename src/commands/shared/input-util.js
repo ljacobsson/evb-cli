@@ -171,7 +171,7 @@ function sourceAutocomplete(sources) {
         split.filter(
           (f) =>
             typeof p === "string" && p.toLowerCase().includes(f.toLowerCase())
-            || p.name.toLowerCase().includes(f.toLowerCase())
+            || (p.name && p.name.toLowerCase().includes(f.toLowerCase()))
         ).length === split.length
     );
   };
