@@ -37,7 +37,7 @@
 
     <script type="text/javascript">
       let network;
-      let token = uuidv4();      
+      let token = uuidv4();
       let socket;
       const rule = {
         EventPattern: '{"source":["aws.events"]}',
@@ -71,6 +71,9 @@
       function draw() {
         // create a network
         var container = document.getElementById("mynetwork");
+        edges.forEach((edge) => {
+          edge.title = preTitle(edge.title);
+        });
         var data = {
           nodes: nodes,
           edges: edges,
@@ -106,7 +109,7 @@
           },
         };
         network = new vis.Network(container, data, options);
-        network.on("selectEdge", function (params) {          
+        network.on("selectEdge", function (params) {
           if (socket) {
             socket.close();
           }
@@ -227,6 +230,12 @@
         }
       }
 
+      function preTitle(text) {
+        const container = document.createElement("pre");
+        container.innerText = text;
+        return container;
+      }
+
       function groupByTag(event) {
         const tag = event.target.value;
         nodes = new vis.DataSet(nodes.get({ filter: (p) => !p.tagRelation }));
@@ -282,7 +291,9 @@
     >:<select id="tagFilterValue"></select>
     <div id="mynetwork"></div>
     <div id="wssOutput">
-      <div>Event feed:<br>Click on a connection to subscribe to its events</div>
+      <div>
+        Event feed:<br />Click on a connection to subscribe to its events
+      </div>
       <pre id="feed"></pre>
     </div>
   </body>

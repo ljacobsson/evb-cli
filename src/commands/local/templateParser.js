@@ -1,8 +1,8 @@
 const { replay } = require("../shared/archive-util");
 
-function handleSAMFunction(resource, rules, resourceKey, replaySettings) {
+function handleSAMResource(resource, rules, resourceKey, replaySettings) {
   if (
-    resource.Type === "AWS::Serverless::Function" &&
+    (resource.Type === "AWS::Serverless::Function" || resource.Type === "AWS::Serverless::StateMachine") &&
     resource.Properties &&
     resource.Properties.Events
   ) {
@@ -62,5 +62,5 @@ function handleEventsRule(resource, rules, resourceKey, replaySettings) {
 
 module.exports = {
   handleEventsRule,
-  handleSAMFunction,
+  handleSAMResource,
 };

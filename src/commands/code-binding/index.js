@@ -7,6 +7,7 @@ program
   .alias("cb")
   .option("-t, --template [template]", "Path to template file")
   .option("-n, --type-name [typeName]", "Type name", "MyType")
+  .option("-p, --profile [profile]", "AWS profile to use")
   .option(
     "-o, --output-file [outputFile]",
     "Output file name. Writes to std out if skipped"

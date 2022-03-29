@@ -38,6 +38,7 @@ async function replayLambda(cmd) {
           config.FunctionEventInvokeConfigs.length &&
           config.FunctionEventInvokeConfigs[0].DestinationConfig &&
           config.FunctionEventInvokeConfigs[0].DestinationConfig.OnFailure &&
+          config.FunctionEventInvokeConfigs[0].DestinationConfig.OnFailure.Destination &&
           config.FunctionEventInvokeConfigs[0].DestinationConfig.OnFailure.Destination.startsWith(
             "arn:aws:events:"
           )
@@ -53,7 +54,7 @@ async function replayLambda(cmd) {
   let functionConfig;
 
   if (destinations.length > 1) {
-    functionConfig = inputUtil.selectFrom(
+    functionConfig = await inputUtil.selectFrom(
       destinations.map((d) => {
         return {
           name: d.FunctionEventInvokeConfigs[0].FunctionArn.split(":").slice(

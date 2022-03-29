@@ -1,10 +1,8 @@
 const schemaBrowser = require("../shared/schema-browser");
 const inputUtil = require("../shared/input-util");
 const templateParser = require("../shared/template-parser");
-const program = require("commander");
 const SchemasClient = require("aws-sdk/clients/schemas");
 const schemas = new SchemasClient();
-const authHelper = require("../shared/auth-helper");
 const jsf = require("json-schema-faker");
 const jp = require("jsonpath");
 const toJsonSchema = require("to-json-schema");
@@ -12,13 +10,15 @@ const fs = require("fs");
 const {
   quicktype,
   InputData,
-  jsonInputForTargetLanguage,
   JSONSchemaInput,
   JSONSchemaStore,
-  TargetLanguage,
 } = require("quicktype-core");
 const languages = require("quicktype-core/dist/language/All");
-
+require("./languages/csharp");
+require("./languages/typescript");
+require("./languages/python");
+require("./languages/java");
+require("./languages/swift");
 async function loadFromRegistry(cmd) {
   const schemaLocation = await schemaBrowser.getSchemaName(schemas);
   const schema = await schemas

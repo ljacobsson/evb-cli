@@ -63,7 +63,7 @@ async function initLocalPatternListener(
   let rules = [];
   for (const resourceKey of Object.keys(template.Resources)) {
     const resource = template.Resources[resourceKey];
-    templateParser.handleSAMFunction(resource, rules, resourceKey, replaySettings);
+    templateParser.handleSAMResource(resource, rules, resourceKey, replaySettings);
     templateParser.handleEventsRule(resource, rules, resourceKey, replaySettings);
     rules = rules.sort((a, b) => a.Name > b.Name);
   }
