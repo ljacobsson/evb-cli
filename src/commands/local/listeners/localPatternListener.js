@@ -21,9 +21,9 @@ const intrinsicFunctions = [
   "Ref",
 ];
 let output = console;
-function findAllKeys(obj, keyArray) {
-  keyArray.push(...Object.keys(obj));
-  for (const prop of Object.keys(obj)) {
+function findAllKeys(obj, keyArray) {  
+  keyArray.push(...Object.keys(obj || {}));
+  for (const prop of Object.keys(obj || {})) {
     if (
       !obj[prop] ||
       typeof obj[prop] !== "object" ||
