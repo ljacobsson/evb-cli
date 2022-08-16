@@ -142,7 +142,7 @@ async function build(busName) {
                                 edges.push({
                                     from: source,
                                     to: targetName,
-                                    label: pattern["detail-type"][0],
+                                    label: detailType,
                                     title: `${JSON.stringify(pattern, null, 2)}`,
                                     rule: {
                                         EventBusName: rule.EventBusName,
