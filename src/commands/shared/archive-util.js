@@ -96,17 +96,12 @@ async function createAndExecute(
         },
       };
       const accountId = ruleConfig.EventSourceArn.split(":")[4];
-      sfTarget.InputTransformer.InputTemplate = `{\"OriginalEvent\": <OriginalEvent>, "StartTime": "${
-        ruleConfig.EventStartTime
-      }", "TargetArn": "${
-        sfTarget.Arn
-      }", "Action": "dispatch", "ReplaySpeed": ${
-        cmd.replaySpeed || 0
-      }, "DispatchSource": "${
-        cmd.dispatchSourceOverride
-      }", "EventBusName": "${cmd.eventbus}", "ReplayName": "${
-        cmd.replayName
-      }"}`;
+      sfTarget.InputTransformer.InputTemplate = `{\"OriginalEvent\": <OriginalEvent>, "StartTime": "${ruleConfig.EventStartTime
+        }", "TargetArn": "${sfTarget.Arn
+        }", "Action": "dispatch", "ReplaySpeed": ${cmd.replaySpeed || 0
+        }, "DispatchSource": "${cmd.dispatchSourceOverride
+        }", "EventBusName": "${cmd.eventbus}", "ReplayName": "${cmd.replayName
+        }"}`;
       sfTarget.Arn = `arn:aws:states:${AWS.config.region}:${accountId}:stateMachine:evb-cli-paced-replays`;
       sfRule.Name = `${name}-sf`;
       delete sfRule.Arn;
@@ -181,14 +176,20 @@ async function getDates() {
 }
 
 async function selectRules(eventbus, rulePrefix) {
-  const rules = await eventBridge
-    .listRules({ EventBusName: eventbus, NamePrefix: rulePrefix })
-    .promise();
+  const rules = [];
+  let token;
+  do {
+    const ruleResponse = await eventBridge
+      .listRules({ EventBusName: eventbus, NamePrefix: rulePrefix, NextToken: token })
+      .promise();
+    token = ruleResponse.NextToken;
+    rules.push(...ruleResponse.Rules);
+  } while (token)
   let filteredRules;
 
   do {
     filteredRules = await inputUtil.multiSelectFrom(
-      rules.Rules.filter((p) => !p.ManagedBy).map((p) => {
+      rules.filter((p) => !p.ManagedBy).map((p) => {
         return { name: p.Name, value: p };
       }),
       "Select rules to replay against",
