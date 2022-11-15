@@ -21,7 +21,9 @@ const backNavigation = [BACK, new inquirer.Separator("-------------")];
 const doneNavigation = [DONE, UNDO, new inquirer.Separator("-------------")];
 const filterRules = [
   "equals",
+  "equals-ignore-case",
   "prefix",
+  "suffix",
   "anything-but",
   "numeric",
   "exists",
