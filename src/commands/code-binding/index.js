@@ -9,6 +9,10 @@ program
   .option("-n, --type-name [typeName]", "Type name", "MyType")
   .option("-p, --profile [profile]", "AWS profile to use")
   .option(
+    "--region [region]",
+    "The AWS region to use. Falls back on AWS_REGION environment variable if not specified"
+  )
+  .option(
     "-o, --output-file [outputFile]",
     "Output file name. Writes to std out if skipped"
   )
