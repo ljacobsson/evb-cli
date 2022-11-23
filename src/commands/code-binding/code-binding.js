@@ -2,7 +2,6 @@ const schemaBrowser = require("../shared/schema-browser");
 const inputUtil = require("../shared/input-util");
 const templateParser = require("../shared/template-parser");
 const SchemasClient = require("aws-sdk/clients/schemas");
-const schemas = new SchemasClient();
 const jsf = require("json-schema-faker");
 const jp = require("jsonpath");
 const toJsonSchema = require("to-json-schema");
@@ -20,6 +19,7 @@ require("./languages/python");
 require("./languages/java");
 require("./languages/swift");
 async function loadFromRegistry(cmd) {
+  const schemas = new SchemasClient();
   const schemaLocation = await schemaBrowser.getSchemaName(schemas);
   const schema = await schemas
     .exportSchema({
@@ -32,6 +32,8 @@ async function loadFromRegistry(cmd) {
 }
 
 async function loadFromTemplate(cmd) {
+  const schemas = new SchemasClient();
+
   if (!cmd.registryName) {
     cmd.registryName = (await inputUtil.getRegistry(schemas)).id;
   }

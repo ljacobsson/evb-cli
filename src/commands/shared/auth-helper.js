@@ -4,6 +4,7 @@ require("@mhlabs/aws-sdk-sso");
 function initAuth(cmd) {
 
   const credentials = new AWS.SharedIniFileCredentials({ profile: cmd.profile });
+  console.log(credentials);
   if (credentials.accessKeyId) {
     AWS.config.credentials = credentials;
   } else {
