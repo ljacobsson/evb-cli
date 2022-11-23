@@ -9,7 +9,7 @@ program
   .option("-n, --type-name [typeName]", "Type name", "MyType")
   .option("-p, --profile [profile]", "AWS profile to use")
   .option(
-    "--region [region]",
+    "-r, --region [region]",
     "The AWS region to use. Falls back on AWS_REGION environment variable if not specified"
   )
   .option(

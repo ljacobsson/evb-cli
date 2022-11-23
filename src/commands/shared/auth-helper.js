@@ -3,6 +3,7 @@ require("@mhlabs/aws-sdk-sso");
 
 function initAuth(cmd) {
 
+  AWS.config.region = cmd.region || process.env.AWS_REGION || AWS.config.region
   const credentials = new AWS.SharedIniFileCredentials({ profile: cmd.profile });
   if (credentials.accessKeyId) {
     AWS.config.credentials = credentials;
@@ -12,7 +13,6 @@ function initAuth(cmd) {
       new AWS.SingleSignOnCredentials()
     );
   }
-  process.env.AWS_REGION = cmd.region || process.env.AWS_REGION || AWS.config.region
 }
 
 module.exports = {
