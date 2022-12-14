@@ -1,0 +1,443 @@
+[
+  {
+    "Type": "AWS::SQS::Queue",
+    "Source": true,
+    "Target": true,
+    "ArnGetter": {
+      "Fn::GetAtt": ["#RESOURCE_NAME#", "Arn"]
+    },
+    "SourceSchemaName": "PipeSourceSqsQueueParameters",
+    "TargetSchemaName": "PipeTargetSqsQueueParameters",
+    "SourcePolicy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "sqs:ReceiveMessage",
+            "sqs:DeleteMessage",
+            "sqs:GetQueueAttributes"
+          ]
+        }
+      ]
+    },
+    "TargetPolicy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": ["sqs:SendMessage"]
+        }
+      ]
+    }
+  },
+  {
+    "Type": "AWS::Kinesis::Stream",
+    "Source": true,
+    "Target": true,
+    "ArnGetter": {
+      "Fn::GetAtt": ["#RESOURCE_NAME#", "Arn"]
+    },
+    "SourceSchemaName": "PipeSourceKinesisStreamParameters",
+    "TargetSchemaName": "PipeTargetKinesisStreamParameters",
+    "SourcePolicy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "kinesis:DescribeStream",
+            "kinesis:DescribeStreamSummary",
+            "kinesis:GetRecords",
+            "kinesis:GetShardIterator",
+            "kinesis:ListStreams",
+            "kinesis:ListShards"
+          ]
+        }
+      ]
+    },
+    "TargetPolicy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": ["kinesis:PutRecord", "kinesis:PutRecords"]
+        }
+      ]
+    }
+  },
+  {
+    "Type": "AWS::DynamoDB::Table",
+    "Source": true,
+    "Target": false,
+    "ArnGetter": {
+      "Fn::GetAtt": ["#RESOURCE_NAME#", "StreamArn"]
+    },
+    "SourceSchemaName": "PipeSourceDynamoDBStreamParameters",
+    "SourcePolicy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "dynamodb:DescribeStream",
+            "dynamodb:GetRecords",
+            "dynamodb:GetShardIterator",
+            "dynamodb:ListStreams"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Type": "AWS::ApiGateway::RestApi",
+    "Source": false,
+    "Target": true,
+    "ArnGetter": {
+      "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:#RESOURCE_NAME#/prod/*"
+    },
+    "TargetSchemaName": "PipeTargetHttpParameters",
+    "TargetPolicy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": ["execute-api:Invoke", "execute-api:ManageConnections"]
+        }
+      ]
+    }
+  },
+  {
+    "Type": "AWS::Lambda::Function",
+    "Source": false,
+    "Target": true,
+    "ArnGetter": {
+      "Fn::GetAtt": ["#RESOURCE_NAME#", "Arn"]
+    },
+    "TargetSchemaName": "PipeTargetLambdaFunctionParameters",
+    "TargetPolicy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": ["lambda:InvokeFunction"]
+        }
+      ]
+    }
+  },
+  {
+    "Type": "AWS::Serverless::Function",
+    "Source": false,
+    "Target": true,
+    "ArnGetter": {
+      "Fn::GetAtt": ["#RESOURCE_NAME#", "Arn"]
+    },
+    "TargetSchemaName": "PipeTargetLambdaFunctionParameters",
+    "TargetPolicy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": ["lambda:InvokeFunction"]
+        }
+      ]
+    }
+  },
+  {
+    "Type": "AWS::Events::ApiDestination",
+    "Source": false,
+    "Target": true,
+    "ArnGetter": {
+      "Fn::GetAtt": ["#RESOURCE_NAME#", "Arn"]
+    },
+    "TargetSchemaName": "PipeTargetApiDestinationParameters",
+    "TargetPolicy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": ["events:InvokeApiDestination"]
+        }
+      ]
+    }
+  },
+  {
+    "Type": "AWS::Logs::LogsGroup",
+    "Source": false,
+    "Target": true,
+    "ArnGetter": {
+      "Fn::GetAtt": ["#RESOURCE_NAME#", "Arn"]
+    },
+    "TargetSchemaName": "PipeTargetLogsFunctionParameters",
+    "TargetPolicy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": ["logs:CreateLogStream", "logs:PutLogEvents"]
+        }
+      ]
+    }
+  },
+  {
+    "Type": "AWS::ECS::TaskDefinition",
+    "Source": false,
+    "Target": true,
+    "ArnGetter": {
+      "Fn::GetAtt": ["#RESOURCE_NAME#", "Arn"]
+    },
+    "TargetSchemaName": "PipeTargetEcsTaskParameters",
+    "TargetPolicy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": ["ecs:RunTask"],
+          "Resource": [
+            { "Fn::Sub": "${#RESOURCE_NAME#.Arn}:*" },
+            { "Ref": "#RESOURCE_NAME#" }
+          ],
+          "Condition": {
+            "ArnLike": {
+              "ecs:cluster": {
+                "Fn::Sub": "arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/fargate"
+              }
+            }
+          }
+        },
+        {
+          "Effect": "Allow",
+          "Action": "iam:PassRole",
+          "Resource": ["*"],
+          "Condition": {
+            "StringLike": {
+              "iam:PassedToService": "ecs-tasks.amazonaws.com"
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "Type": "AWS::Events::EventBus",
+    "Source": false,
+    "Target": true,
+    "ArnGetter": {
+      "Fn::GetAtt": ["#RESOURCE_NAME#", "Arn"]
+    },
+    "TargetSchemaName": "PipeTargetEventBusParameters",
+    "TargetPolicy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": ["events:PutEvents"]
+        }
+      ]
+    }
+  },
+  {
+    "Type": "AWS::KinesisFirehose::DeliveryStream",
+    "Source": false,
+    "Target": true,
+    "ArnGetter": {
+      "Fn::GetAtt": ["#RESOURCE_NAME#", "Arn"]
+    },
+    "TargetSchemaName": "PipeTargetEventBusParameters",
+    "TargetPolicy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": ["firehose:PutRecord", "firehose:PutRecordBatch"]
+        }
+      ]
+    }
+  },
+  {
+    "Type": "AWS::KinesisFirehose::DeliveryStream",
+    "Source": false,
+    "Target": true,
+    "ArnGetter": {
+      "Fn::GetAtt": ["#RESOURCE_NAME#", "Arn"]
+    },
+    "TargetSchemaName": "PipeTargetEventBusParameters",
+    "TargetPolicy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": ["firehose:PutRecord", "firehose:PutRecordBatch"]
+        }
+      ]
+    }
+  },
+  {
+    "Type": "AWS::SageMaker::Pipeline",
+    "Source": false,
+    "Target": true,
+    "ArnGetter": {
+      "Fn::GetAtt": ["#RESOURCE_NAME#", "Arn"]
+    },
+    "TargetSchemaName": "PipeTargetSageMakerParameters",
+    "TargetPolicy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": ["sagemaker:StartPipelineExecution"]
+        }
+      ]
+    }
+  },
+  {
+    "Type": "AWS::SNS::Topic",
+    "Source": false,
+    "Target": true,
+    "ArnGetter": {
+      "Ref": "#RESOURCE_NAME#"
+    },
+    "TargetSchemaName": "PipeTargetSNSParameters",
+    "TargetPolicy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": ["sns:Publish"]
+        }
+      ]
+    }
+  },
+  {
+    "Type": "AWS::Serverless::StateMachine",
+    "Source": false,
+    "Target": true,
+    "ArnGetter": {
+      "Ref": "#RESOURCE_NAME#"
+    },
+    "TargetSchemaName": "PipeTargetStatesParameters",
+    "TargetPolicy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": ["states:StartExecution"]
+        }
+      ]
+    }
+  },
+  {
+    "Type": "AWS::StepFunctions::StateMachine",
+    "Source": false,
+    "Target": true,
+    "ArnGetter": {
+      "Ref": "#RESOURCE_NAME#"
+    },
+    "TargetSchemaName": "PipeTargetStatesParameters",
+    "TargetPolicy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": ["states:StartExecution"]
+        }
+      ]
+    }
+  },
+  {
+    "Type": "AWS::MSK::Cluster",
+    "Source": false,
+    "Target": true,
+    "ArnGetter": {
+      "Ref": "#RESOURCE_NAME#"
+    },
+    "TargetSchemaName": "PipeTargetStatesParameters",
+    "TargetPolicy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "kafka:DescribeCluster",
+            "kafka:DescribeClusterV2",
+            "kafka:GetBootstrapBrokers"
+          ],
+          "Resource": [{ "Ref": "#RESOURCE_NAME#" }]
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "ec2:DescribeNetworkInterfaces",
+            "ec2:DescribeSubnets",
+            "ec2:DescribeSecurityGroups",
+            "ec2:DescribeVpcs"
+          ],
+          "Resource": "*"
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "ec2:CreateNetworkInterface",
+            "ec2:DeleteNetworkInterface"
+          ],
+          "Resource": "*",
+          "Condition": {
+            "StringEqualsIfExists": {
+              "ec2:SubnetID": [
+                "subnet-11111111111111111",
+                "subnet-22222222222222222",
+                "subnet-33333333333333333"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "Type": "AWS::AmazonMQ::Broker",
+    "Source": false,
+    "Target": true,
+    "ArnGetter": {
+      "Ref": "#RESOURCE_NAME#"
+    },
+    "TargetSchemaName": "PipeTargetStatesParameters",
+    "TargetPolicy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": ["mq:DescribeBroker"],
+          "Resource": [{ "Ref": "#RESOURCE_NAME#" }]
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "ec2:DescribeNetworkInterfaces",
+            "ec2:DescribeSubnets",
+            "ec2:DescribeSecurityGroups",
+            "ec2:DescribeVpcs"
+          ],
+          "Resource": "*"
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "ec2:CreateNetworkInterface",
+            "ec2:DeleteNetworkInterface"
+          ],
+          "Resource": "*",
+          "Condition": {
+            "StringEqualsIfExists": {
+              "ec2:SubnetID": [
+                "subnet-11111111111111111",
+                "subnet-22222222222222222",
+                "subnet-33333333333333333"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+]

@@ -17,6 +17,15 @@ For AWS events, such as `aws.codepipeline` it's already enabled, but for custom 
 
 ![Demo](https://github.com/mhlabs/evb-cli/raw/master/images/demo.gif)
 
+### Generate EventBridge Pipes connections
+[EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/) was one of the more exciting serverless announcements at re:Invent 2022. It lets you create a one-to-one mapping between a source and a target service so you can build event driven applications with less Lambda glue functions.
+
+`evb pipes` helps you create pipes between resources in your CloudFormation/SAM template. Although the [AWS::Pipes::Pipe](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-pipes-pipe.html) resource is easy to compose, the IAM role that goes with it isn't that straight forward. 
+
+Use the `--guided` flag to get prompted for all optional parameters.
+
+![Demo](https://github.com/mhlabs/evb-cli/raw/master/images/demo-pipes.gif)
+
 ### To generate an EventBridge InputTransformer object:
 [Input transformers](https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-input-transformer-tutorial.html) are useful when you only want a small portion of the event sent to your target. This command helps you navigate the JSON payload and generate the [InputTransformer CloudFormation object](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-events-rule-inputtransformer.html)
 
