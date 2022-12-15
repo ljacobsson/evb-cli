@@ -8,7 +8,7 @@ async function build(command) {
   const templateName = cmd.template;
   const template = templateParser.load(templateName, true);
   if (!template) {
-    console.log(`Template "${templateName}" does not exist or could not be parsed.`);
+    console.log(`Template "${templateName}" does not exist or could not be parsed. Please use the '--template <file-path>' option to use another file.`);
     return;
   }
   const compatibleSources = await getSources(template);
@@ -34,7 +34,7 @@ async function build(command) {
     target = { type: type, arn: arn, name: type.split(":")[1] }
   }
   const targetConfig = supportedTypes.find(p => p.Type === target.type);
-  const targetObj = await buildParametersForSide(targetConfig.TargetSchemaName);  
+  const targetObj = await buildParametersForSide(targetConfig.TargetSchemaName);
   const sourcePropertyName = sourceConfig.SourceSchemaName.replace("PipeSource", "");
   const targetPropertyName = targetConfig.TargetSchemaName.replace("PipeTarget", "");
   const pipeName = `${source.name}To${target.name}Pipe`;
@@ -75,24 +75,7 @@ async function build(command) {
           }
         ]
       },
-      Policies: [
-        {
-          PolicyName: "LogsPolicy",
-          PolicyDocument: {
-            Version: "2012-10-17",
-            Statement: [
-              {
-                Effect: "Allow",
-                Action: [
-                  "logs:CreateLogStream",
-                  "logs:CreateLogGroup",
-                  "logs:PutLogEvents"],
-                Resource: "*"
-              },
-            ],
-          }
-        }
-      ]
+      Policies: []
     }
   };
   sourceConfig.SourcePolicy.Statement[0].Resource = source.arn || JSON.parse(JSON.stringify((sourceConfig.SourcePolicy.Statement[0].Resource || sourceConfig.ArnGetter)).replace(/#RESOURCE_NAME#/g, source.name));
