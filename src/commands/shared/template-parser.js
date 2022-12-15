@@ -22,7 +22,7 @@ function load(filePath, muteError) {
       format = "yaml";
       return template;
     } catch (err) {
-      console.log(err.message);
+      console.log("Can't find or parse " + templateFile.toString());
     }
   } catch (err) {
     if (!muteError) {

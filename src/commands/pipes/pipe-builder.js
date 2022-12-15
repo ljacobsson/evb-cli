@@ -8,7 +8,8 @@ async function build(command) {
   const templateName = cmd.template;
   const template = templateParser.load(templateName, true);
   if (!template) {
-    throw new Error(`Template "${templateName}" does not exist.`);
+    console.log(`Template "${templateName}" does not exist or could not be parsed.`);
+    return;
   }
   const compatibleSources = await getSources(template);
   const sourceChoices = compatibleSources.map(p => { return { name: `[${template.Resources[p].Type}] ${p}`, value: { name: p, type: template.Resources[p].Type } } }).sort((a, b) => a.name > b.name ? 1 : -1);
