@@ -6,6 +6,10 @@ if (!process.stdout.getWindowSize) {
 }
 
 const inquirer = require("inquirer");
+
+const TreePrompt = require('inquirer-tree-prompt');
+inquirer.registerPrompt('tree', TreePrompt);
+
 inquirer.registerPrompt(
   "autocomplete",
   require("inquirer-autocomplete-prompt")
@@ -118,10 +122,9 @@ async function getProperty(currentObject, objectArray) {
   const property = await inquirer.prompt({
     name: "id",
     type: "autocomplete",
-    message: `Add ${
-      objectArray[objectArray.length - 1] ||
+    message: `Add ${objectArray[objectArray.length - 1] ||
       currentObject["x-amazon-events-detail-type"]
-    } item`,
+      } item`,
     choices: choices,
     source: sourceAutocomplete(choices),
   });
@@ -252,6 +255,21 @@ async function getDate(message) {
   return answer;
 }
 
+async function tree(message, items) {
+  let answer;
+  do {
+    answer = await inquirer
+      .prompt(
+        {
+          type: 'tree',
+          name: "state",
+          message: message,
+          tree: items,
+        });
+  } while (!answer.state.action);
+  return answer.state;
+}
+
 module.exports = {
   getEventBusName,
   getRegistry,
@@ -263,6 +281,7 @@ module.exports = {
   getPropertyValue,
   text,
   getDate,
+  tree,
   BACK,
   DONE,
   UNDO,

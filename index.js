@@ -15,6 +15,7 @@ require("./src/commands/local");
 require("./src/commands/code-binding");
 require("./src/commands/api-destination");
 require("./src/commands/pipes");
+require("./src/commands/find-usages");
 
 program.version(package.version, "-v, --vers", "output the current version");
 
