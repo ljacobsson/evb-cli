@@ -53,6 +53,12 @@ function getEventRules() {
     .sort();
 }
 
+function getStateMachines() {
+  return Object.keys(template.Resources)
+    .filter((p) => template.Resources[p].Type === "AWS::Serverless::StateMachine")
+    .sort();
+}
+
 async function injectPattern(pattern) {
   if (!template) {
     return;
@@ -61,7 +67,7 @@ async function injectPattern(pattern) {
     "Output to stdout",
     new inquirer.Separator("Compatible resources:"),
   ];
-  const resources = [...getLambdaFunctions(), ...getEventRules()];
+  const resources = [...getLambdaFunctions(), ...getEventRules(), ...getStateMachines()];
   for (const key of resources) {
     choices.push({
       name: key,
@@ -78,7 +84,7 @@ async function injectPattern(pattern) {
     );
     return;
   }
-  if (resource.value.Type === "AWS::Serverless::Function") {
+  if (["AWS::Serverless::Function", "AWS::Serverless::StateMachine"].includes(resource.value.Type)) {
     const eventName = await inputUtil.text("Event name", "MyEvent");
     const eventBus = await inputUtil.getEventBusName(new AWS.EventBridge());
     if (!resource.value.Properties.Events) {
