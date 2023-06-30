@@ -1,12 +1,12 @@
 const { v4: uuidv4 } = require('uuid');
+const AWS = require("aws-sdk");
 const websocket = require('./websocket');
-let output = console;
 
 async function initArnListener(arn, target, compact, sam, replaySettings, func) {
   const token = uuidv4();
   const apiId = await websocket.apiId();
   websocket.connect(
-    `wss://${apiId}.execute-api.${process.env.AWS_REGION}.amazonaws.com/Prod`,
+    `wss://${apiId}.execute-api.${AWS.config.region}.amazonaws.com/Prod`,
     token,
     null,
     compact,
