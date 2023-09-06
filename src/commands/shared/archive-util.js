@@ -1,10 +1,5 @@
 const AWS = require("aws-sdk");
 const inputUtil = require("./input-util");
-const arnListener = require("../local/listeners/arnListener");
-const fs = require("fs");
-const tempDir = require("temp-dir");
-const path = require("path");
-const { split } = require("temp-dir");
 
 let eventBridge, sts;
 

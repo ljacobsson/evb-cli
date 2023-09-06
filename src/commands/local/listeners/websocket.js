@@ -110,7 +110,7 @@ async function apiId(cloudFormationClient) {
 
 async function apiUrl() {
   return `wss://${await apiId()}.execute-api.${
-    process.env.AWS_REGION
+    AWS.config.region
   }.amazonaws.com/Prod`;
 }
 
