@@ -39,6 +39,14 @@ program
   )
   .description("Initiates local consumption of a stack's EventBridge rules")
   .action(async (cmd) => {
+    process.env.AWS_REGION = cmd.region || process.env.AWS_REGION;
+    if (!process.env.AWS_REGION || process.env.AWS_REGION === "undefined") {
+      console.error(
+        "Missing required option: --region or AWS_REGION environment variable"
+      );
+      process.exit(1);
+    }
+
     authHelper.initAuth(cmd);
     let replayConfig;
     if (cmd.replay) {

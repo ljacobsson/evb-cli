@@ -1,7 +1,7 @@
 {
   "name": "@mhlabs/evb-cli",
-  "version": "1.1.51",
-  "description": "A package for building EventBridge/CloudWatch Events patterns",
+  "version": "1.1.52",
+  "description": "A package for building EventBridge patterns",
   "main": "index.js",
   "scripts": {
     "test": "jest"

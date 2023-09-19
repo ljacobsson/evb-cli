@@ -1,8 +1,8 @@
 const program = require("commander");
-const templateParser = require("../shared/template-parser");
+
 const apiDestination = require("./api-destination");
 const authHelper = require("../shared/auth-helper");
-const AWS = require("aws-sdk");
+
 program
   .command("api-destination")
   .alias("api")
