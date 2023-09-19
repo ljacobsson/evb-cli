@@ -1,5 +1,4 @@
 const AWS = require("aws-sdk");
-const inputUtil = require("../shared/input-util");
 const archiveUtil = require("../shared/archive-util");
 
 let eventBridge, sts;
