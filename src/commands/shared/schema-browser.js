@@ -1,6 +1,7 @@
 const inputUtil = require("./input-util");
 const YAML = require("json-to-pretty-yaml");
-const AWS = require("aws-sdk");
+const { DescribeSchemaCommand, ListSchemasCommand, SchemasClient } = require("@aws-sdk/client-schemas");
+
 function isObject(item) {
   return item && typeof item === "object" && !Array.isArray(item);
 }
@@ -34,30 +35,41 @@ function outputPattern(output, format) {
 
 async function* ListSchemas(schemas, params) {
   let token;
+  let errorOccurred = false;
+
   do {
-    const response = await schemas
-      .listSchemas({
-        ...params,
-        NextToken: token,
-      })
-      .promise();
+    const listSchemasParams = {
+      ...params,
+      NextToken: token,
+    };
+    const response = await schemas.send(new ListSchemasCommand(listSchemasParams));
+    if (!response.$metadata.httpStatusCode || response.$metadata.httpStatusCode !== 200) {
+      console.error("Error listing schemas:", response);
+      errorOccurred = true;
+      break; // Exit the loop in case of an error
+    }
 
     yield response.Schemas;
 
     ({ NextToken: token } = response);
-  } while (token);
+  } while (token && !errorOccurred);
 }
 
-async function getSchema(schemas) {
-  const { registry, schemaName, sourceName } = await getSchemaName(schemas);
-  const describeSchemaResponse = await schemas
-    .describeSchema({ RegistryName: registry.id, SchemaName: schemaName })
-    .promise();
+async function getSchema() {
+  const schemas = new SchemasClient();
+  const { registry, schemaName, sourceName } = await getSchemaName();
+  const describeSchemaResponse = await schemas.send(
+    new DescribeSchemaCommand({
+      RegistryName: registry.id,
+      SchemaName: schemaName,
+    })
+  );
   const schema = JSON.parse(describeSchemaResponse.Content);
   return { sourceName, schema };
 }
 
-async function getSchemaName(schemas) {
+async function getSchemaName() {
+  const schemas = new SchemasClient();
   const registry = await inputUtil.getRegistry(schemas);
   const schemaList = [];
   for await (schemaItem of ListSchemas(schemas, {
@@ -85,15 +97,13 @@ function findCurrent(path, schema) {
 }
 
 async function getForPattern(pattern) {
-  const schemas = new AWS.Schemas();
-  const registry = await inputUtil.getRegistry(schemas);
+  const schemas = new SchemasClient();
+  const registry = await inputUtil.getRegistry();
   const params = {
     SchemaName: `${pattern.source[0]}@${pattern["detail-type"][0].replace(/ /g, "")}`,
     RegistryName: registry.id,
   };
-  const schema = await schemas
-    .describeSchema(params)
-    .promise();
+  const schema = await schemas.send(new DescribeSchemaCommand(params));
   return schema;
 }
 

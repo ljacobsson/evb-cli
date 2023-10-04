@@ -1,5 +1,6 @@
 const WebSocket = require("ws");
-const AWS = require("aws-sdk");
+const { LambdaClient, InvokeCommand } = require("@aws-sdk/client-lambda");
+const { CloudFormationClient, ListStackResourcesCommand } = require("@aws-sdk/client-cloudformation");
 
 let ws, output;
 function connect(
@@ -16,7 +17,7 @@ function connect(
   func //TODO: make all args into options object
 ) {
   output = output || console;
-  const lambda = new AWS.Lambda({
+  const lambda = new LambdaClient({
     endpoint: "http://127.0.0.1:3001/",
     sslEnabled: false,
   });
@@ -68,11 +69,10 @@ function connect(
         if (sam) {
           try {
             await lambda
-              .invoke({
+              .send(new InvokeCommand ({
                 FunctionName: obj.Target,
                 Payload: JSON.stringify(obj.Body),
-              })
-              .promise();
+              }));
           } catch (err) {
             output.log(err);
           }
@@ -87,11 +87,9 @@ function connect(
 }
 
 async function apiId(cloudFormationClient) {
-  const cloudFormation = cloudFormationClient || new AWS.CloudFormation();
+  const cloudFormation = cloudFormationClient || new CloudFormationClient();
   try {
-    const evbLocalStack = await cloudFormation
-      .listStackResources({ StackName: "serverlessrepo-evb-local" })
-      .promise();
+    const evbLocalStack = await cloudFormation.send(new ListStackResourcesCommand({ StackName: "serverlessrepo-evb-local" }));
     const apiGatewayId = evbLocalStack.StackResourceSummaries.filter(
       (p) => p.LogicalResourceId === "WebSocket"
     )[0].PhysicalResourceId;
@@ -109,9 +107,8 @@ async function apiId(cloudFormationClient) {
 }
 
 async function apiUrl() {
-  return `wss://${await apiId()}.execute-api.${
-    AWS.config.region
-  }.amazonaws.com/Prod`;
+  return `wss://${await apiId()}.execute-api.${process.env.AWS_REGION
+    }.amazonaws.com/Prod`;
 }
 
 function disconnect() {

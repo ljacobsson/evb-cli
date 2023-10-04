@@ -1,5 +1,4 @@
 const fs = require("fs");
-const AWS = require("aws-sdk");
 const utils = require("../utils");
 const { v4: uuidv4 } = require("uuid");
 const YAML = require("yaml-cfn");
@@ -113,7 +112,7 @@ async function initConnection(
   const token = uuidv4();
   websocket.connect(
     `wss://${await websocket.apiId()}.execute-api.${
-      AWS.config.region
+      process.env.AWS_REGION
     }.amazonaws.com/Prod`,
     token,
     ruleName,

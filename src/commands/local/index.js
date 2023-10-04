@@ -1,5 +1,4 @@
 const program = require("commander");
-const AWS = require("aws-sdk");
 const inputUtil = require("../shared/input-util");
 const archiveUtil = require("../shared/archive-util");
 const arnListener = require("./listeners/arnListener");
@@ -47,10 +46,10 @@ program
       process.exit(1);
     }
 
-    authHelper.initAuth(cmd);
+    await authHelper.initAuth(cmd);
     let replayConfig;
     if (cmd.replay) {
-      const eventbus = await inputUtil.getEventBusName(new AWS.EventBridge());
+      const eventbus = await inputUtil.getEventBusName();
       replayConfig = await archiveUtil.getReplayConfig({ eventbus: eventbus});
       replayConfig.EventBusName = eventbus;
     }

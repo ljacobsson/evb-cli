@@ -1,3 +1,6 @@
+const { SchemasClient, ListRegistriesCommand } = require("@aws-sdk/client-schemas");
+const { EventBridgeClient, ListEventBusesCommand } = require("@aws-sdk/client-eventbridge");
+
 // date-prompt fails if stdout doesn't isn't a window context
 if (!process.stdout.getWindowSize) {
   process.stdout.getWindowSize = function () {
@@ -28,11 +31,12 @@ const filterRules = [
   "equals-ignore-case",
   "prefix",
   "suffix",
+  "wildcard",
   "anything-but",
   "numeric",
   "exists",
   "null",
-];
+].sort();
 
 const numericOperators = [">", "<", "=", ">=", "<=", "!=", "range"];
 
@@ -182,8 +186,9 @@ function sourceAutocomplete(sources) {
   };
 }
 
-async function getRegistry(schemas) {
-  const registriesResponse = await schemas.listRegistries().promise();
+async function getRegistry() {
+  const schemas = new SchemasClient();
+  const registriesResponse = await schemas.send(new ListRegistriesCommand({}));
   const registries = [
     ...new Set(registriesResponse.Registries.map((p) => p.RegistryName)),
   ];
@@ -218,8 +223,9 @@ async function multiSelectFrom(list, message, skipBack) {
   return answer.id;
 }
 
-async function getEventBusName(eventbridge) {
-  const eventBusesResponse = await eventbridge.listEventBuses().promise();
+async function getEventBusName() {
+  const eventbridge = new EventBridgeClient();
+  const eventBusesResponse = await eventbridge.send(new ListEventBusesCommand({}));
   let eventBuses = [
     ...new Set(eventBusesResponse.EventBuses.map((p) => p.Name)),
   ];

@@ -2,7 +2,6 @@
 process.env.AWS_SDK_LOAD_CONFIG = 1;
 const program = require("commander");
 const package = require("./package.json");
-require("@mhlabs/aws-sdk-sso");
 require("./src/commands/pattern");
 require("./src/commands/input");
 require("./src/commands/browse");

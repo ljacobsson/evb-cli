@@ -15,7 +15,7 @@ program
   .requiredOption("-u --url [url]", "URL to OpenAPI specification of API")
   .description("Generates API Destination SAM template resources")
   .action(async (cmd) => {
-    authHelper.initAuth(cmd);
+    await authHelper.initAuth(cmd);
 
     await apiDestination.create(cmd);
 

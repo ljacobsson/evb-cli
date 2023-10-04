@@ -14,6 +14,6 @@ const authHelper = require("../shared/auth-helper");
   .option("--region [region]", "The AWS region to use. Falls back on AWS_REGION environment variable if not specified")
   .description("Builds an interactive diagram over an eventbus' rules ")
   .action(async (cmd) => {
-    authHelper.initAuth(cmd);
+    await authHelper.initAuth(cmd);
     await diagramBuilder.build(cmd.eventbus);
   });

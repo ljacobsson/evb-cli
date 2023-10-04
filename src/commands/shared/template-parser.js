@@ -1,6 +1,5 @@
 const fs = require("fs");
 const YAML = require("./yaml-wrapper");
-const AWS = require("aws-sdk");
 const inputUtil = require("./input-util");
 const inquirer = require("inquirer");
 
@@ -86,7 +85,7 @@ async function injectPattern(pattern) {
   }
   if (["AWS::Serverless::Function", "AWS::Serverless::StateMachine"].includes(resource.value.Type)) {
     const eventName = await inputUtil.text("Event name", "MyEvent");
-    const eventBus = await inputUtil.getEventBusName(new AWS.EventBridge());
+    const eventBus = await inputUtil.getEventBusName();
     if (!resource.value.Properties.Events) {
       resource.value.Properties.Events = {};
     }
@@ -106,7 +105,7 @@ async function injectPattern(pattern) {
     );
   }
   if (resource.value.Type === "AWS::Events::Rule") {
-    const eventBus = await inputUtil.getEventBusName(new AWS.EventBridge());
+    const eventBus = await inputUtil.getEventBusName();
     if (!resource.value.Properties) {
       resource.value.Properties = {};
     }
