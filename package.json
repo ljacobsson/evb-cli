@@ -1,6 +1,6 @@
 {
   "name": "@mhlabs/evb-cli",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "A package for building EventBridge patterns",
   "main": "index.js",
   "scripts": {
@@ -16,6 +16,7 @@
     "@aws-sdk/client-eventbridge": "^3.414.0",
     "@aws-sdk/client-iam": "^3.423.0",
     "@aws-sdk/client-kinesis": "^3.423.0",
+    "@aws-sdk/client-lambda": "^3.425.0",
     "@aws-sdk/client-schemas": "^3.414.0",
     "@aws-sdk/client-sfn": "^3.423.0",
     "@aws-sdk/client-sns": "^3.423.0",
