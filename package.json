@@ -1,6 +1,6 @@
 {
   "name": "@mhlabs/evb-cli",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "A package for building EventBridge patterns",
   "main": "index.js",
   "scripts": {
