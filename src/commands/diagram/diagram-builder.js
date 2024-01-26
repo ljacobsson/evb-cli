@@ -1,4 +1,4 @@
-const eb = require("@aws-sdk/client-eventbridge");
+const { EventBridgeClient, ListTargetsByRuleCommand } = require("@aws-sdk/client-eventbridge");
 const { LambdaClient, ListTagsCommand } = require("@aws-sdk/client-lambda");
 const sf = require("@aws-sdk/client-sfn");
 const sn = require("@aws-sdk/client-sns");
@@ -15,7 +15,7 @@ const websocket = require("../local/listeners/websocket");
 const eventBridgeUtil = require("../shared/eventbridge-util");
 
 const cfnTag = "aws:cloudformation:stack-name";
-let eventBridge = new eb.EventBridgeClient();
+let eventBridge = new EventBridgeClient();
 let lambda = new LambdaClient();
 let stepFunctions = new sf.SFNClient();
 let sns = new sn.SNSClient();
@@ -23,7 +23,7 @@ let sqs = new SQSClient();
 let kinesis = new KinesisClient();
 
 function initApis() {
-  eventBridge = new eb.EventBridgeClient();
+  eventBridge = new EventBridgeClient();
   lambda = new LambdaClient();
   stepFunctions = new sf.SFNClient();
   sns = new sn.SNSClient();
@@ -34,7 +34,7 @@ function initApis() {
 const describeMap = {
   kinesis: {
     func: (item) =>
-      kinesis.send( new ListTagsForStreamCommand({ StreamName: item.Arn.split(":").splice(-1)[0] })),
+      kinesis.send(new ListTagsForStreamCommand({ StreamName: item.Arn.split(":").splice(-1)[0] })),
     tags: (item) =>
       item.Tags.map((p) => {
         return { key: p.Key, value: p.Value };
@@ -83,79 +83,77 @@ function createImage(resourceType) {
 }
 
 async function build(busName) {
-    initApis();
-    let nodes = [];
-    let edges = [];
-    let resourceTags = [];
-    let i = 0;
-    const spinner = new Spinner();
-    spinner.setSpinnerString("⠁⠁⠉⠙⠚⠒⠂⠂⠒⠲⠴⠤⠄⠄⠤⠠⠠⠤⠦⠖⠒⠐⠐⠒⠓⠋⠉⠈⠈");
-    spinner.start();
-    const rules = [];
-    for await (const ruleBatch of eventBridgeUtil.listRules(eventBridge, {
-        EventBusName: busName,
-    })) {
-        rules.push(...ruleBatch);
-    }
-    const count = rules.length;
-    for (const rule of rules) {
-        spinner.setSpinnerTitle(`${Math.ceil((i++ / count) * 100)}%`);
-        const targets = await eventBridge
-            .listTargetsByRule({ EventBusName: busName, Rule: rule.Name })
-            .promise();
-        for (const target of targets.Targets) {
-            const service = target.Arn.split(":")[2];
-            const targetName = target.Arn.split(":").slice(-1).pop();
-            const resourceApi = describeMap[service];
-            try {
-                if (resourceApi) {
-                    const tags = await resourceApi.func(target);
-                    const tagArray = resourceApi.tags(tags);
-                    if (rule.EventPattern) {
-                        const pattern = JSON.parse(rule.EventPattern);
-                        for (const source of pattern.source) {
-                            for (const detailType of pattern["detail-type"]) {
-                                const schemaId = `${source}@${detailType}`;
-                                if (nodes.filter((p) => p.id == source).length === 0) {
-                                    nodes.push({
-                                        id: source,
-                                        label: source,
-                                        group: source,
-                                        shape: "image",
-                                        image: createImage("source"),
-                                        value: 10,
-                                        sourceNode: true,
-                                    });
-                                }
-                                if (nodes.filter((p) => p.id == targetName).length === 0) {
-                                    nodes.push({
-                                        id: targetName,
-                                        label: targetName,
-                                        group: tagArray[cfnTag],
-                                        value: 10,
-                                        shape: "image",
-                                        image: createImage(service),
-                                        size: 250,
-                                    });
-                                }
-                                resourceTags.push({ targetName, tagArray });
-                                edges.push({
-                                    from: source,
-                                    to: targetName,
-                                    label: detailType,
-                                    title: `${JSON.stringify(pattern, null, 2)}`,
-                                    rule: {
-                                        EventBusName: rule.EventBusName,
-                                        EventPattern: rule.EventPattern,
-                                        Target: target,
-                                    },
-                                });
-                            }
-                        }
-                    }
-                } 
+  initApis();
+  let nodes = [];
+  let edges = [];
+  let resourceTags = [];
+  let i = 0;
+  const spinner = new Spinner();
+  spinner.setSpinnerString("⠁⠁⠉⠙⠚⠒⠂⠂⠒⠲⠴⠤⠄⠄⠤⠠⠠⠤⠦⠖⠒⠐⠐⠒⠓⠋⠉⠈⠈");
+  spinner.start();
+  const rules = [];
+  for await (const ruleBatch of eventBridgeUtil.listRules(eventBridge, {
+    EventBusName: busName,
+  })) {
+    rules.push(...ruleBatch);
+  }
+  const count = rules.length;
+  for (const rule of rules) {
+    spinner.setSpinnerTitle(`${Math.ceil((i++ / count) * 100)}%`);
+    const targets = await eventBridge.send( new ListTargetsByRuleCommand({ EventBusName: busName, Rule: rule.Name }));
+    for (const target of targets.Targets) {
+      const service = target.Arn.split(":")[2];
+      const targetName = target.Arn.split(":").slice(-1).pop();
+      const resourceApi = describeMap[service];
+      try {
+        if (resourceApi) {
+          const tags = await resourceApi.func(target);
+          const tagArray = resourceApi.tags(tags);
+          if (rule.EventPattern) {
+            const pattern = JSON.parse(rule.EventPattern);
+            for (const source of pattern.source) {
+              for (const detailType of pattern["detail-type"]) {
+                const schemaId = `${source}@${detailType}`;
+                if (nodes.filter((p) => p.id == source).length === 0) {
+                  nodes.push({
+                    id: source,
+                    label: source,
+                    group: source,
+                    shape: "image",
+                    image: createImage("source"),
+                    value: 10,
+                    sourceNode: true,
+                  });
+                }
+                if (nodes.filter((p) => p.id == targetName).length === 0) {
+                  nodes.push({
+                    id: targetName,
+                    label: targetName,
+                    group: tagArray[cfnTag],
+                    value: 10,
+                    shape: "image",
+                    image: createImage(service),
+                    size: 250,
+                  });
+                }
+                resourceTags.push({ targetName, tagArray });
+                edges.push({
+                  from: source,
+                  to: targetName,
+                  label: detailType,
+                  title: `${JSON.stringify(pattern, null, 2)}`,
+                  rule: {
+                    EventBusName: rule.EventBusName,
+                    EventPattern: rule.EventPattern,
+                    Target: target,
+                  },
+                });
+              }
+            }
           }
-      } catch (err) {
+        }
+      }
+      catch (err) {
         // console.log(`Untagged resource ${target.Arn}`, err.message);
       }
     }

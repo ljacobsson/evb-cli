@@ -15,10 +15,14 @@ async function initAuth(cmd) {
     }
   }
 
-  const credentials = await fromSSO({ profile: cmd.profile })();
-  process.env.AWS_ACCESS_KEY_ID = credentials.accessKeyId;
-  process.env.AWS_SECRET_ACCESS_KEY = credentials.secretAccessKey;
-  process.env.AWS_SESSION_TOKEN = credentials.sessionToken;
+  try {
+    const credentials = await fromSSO({ profile: cmd.profile })();
+    process.env.AWS_ACCESS_KEY_ID = credentials.accessKeyId;
+    process.env.AWS_SECRET_ACCESS_KEY = credentials.secretAccessKey;
+    process.env.AWS_SESSION_TOKEN = credentials.sessionToken;
+  } catch (err) {
+    // ignore and use default auth chain
+  }
 }
 
 module.exports = {
