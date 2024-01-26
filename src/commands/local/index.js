@@ -1,5 +1,4 @@
 const program = require("commander");
-const AWS = require("aws-sdk");
 const inputUtil = require("../shared/input-util");
 const archiveUtil = require("../shared/archive-util");
 const arnListener = require("./listeners/arnListener");
@@ -39,10 +38,18 @@ program
   )
   .description("Initiates local consumption of a stack's EventBridge rules")
   .action(async (cmd) => {
-    authHelper.initAuth(cmd);
+    process.env.AWS_REGION = cmd.region || process.env.AWS_REGION;
+    if (!process.env.AWS_REGION || process.env.AWS_REGION === "undefined") {
+      console.error(
+        "Missing required option: --region or AWS_REGION environment variable"
+      );
+      process.exit(1);
+    }
+
+    await authHelper.initAuth(cmd);
     let replayConfig;
     if (cmd.replay) {
-      const eventbus = await inputUtil.getEventBusName(new AWS.EventBridge());
+      const eventbus = await inputUtil.getEventBusName();
       replayConfig = await archiveUtil.getReplayConfig({ eventbus: eventbus});
       replayConfig.EventBusName = eventbus;
     }

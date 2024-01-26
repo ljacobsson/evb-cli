@@ -1,3 +1,6 @@
+const { SchemasClient, ListRegistriesCommand } = require("@aws-sdk/client-schemas");
+const { EventBridgeClient, ListEventBusesCommand } = require("@aws-sdk/client-eventbridge");
+
 // date-prompt fails if stdout doesn't isn't a window context
 if (!process.stdout.getWindowSize) {
   process.stdout.getWindowSize = function () {
@@ -6,6 +9,10 @@ if (!process.stdout.getWindowSize) {
 }
 
 const inquirer = require("inquirer");
+
+const TreePrompt = require('inquirer-tree-prompt');
+inquirer.registerPrompt('tree', TreePrompt);
+
 inquirer.registerPrompt(
   "autocomplete",
   require("inquirer-autocomplete-prompt")
@@ -20,13 +27,71 @@ const DONE = "✔ done";
 const backNavigation = [BACK, new inquirer.Separator("-------------")];
 const doneNavigation = [DONE, UNDO, new inquirer.Separator("-------------")];
 const filterRules = [
-  "equals",
-  "prefix",
-  "anything-but",
-  "numeric",
-  "exists",
-  "null",
-];
+  {
+    name: "equals",
+    value: {
+      name: "equals",
+      isArrayable: true,
+    },
+  },
+  {
+    name: "equals-ignore-case",
+    value: {
+      name: "equals-ignore-case",
+      isArrayable: true,
+    },
+  },
+  {
+    name: "prefix",
+    value: {
+      name: "prefix",
+      isArrayable: true,
+    },
+  },
+  {
+    name: "suffix",
+    value: {
+      name: "suffix",
+      isArrayable: true,
+    },
+  },
+  {
+    name: "wildcard",
+    value: {
+      name: "wildcard",
+      isArrayable: false,
+    },
+  },
+  {
+    name: "anything-but",
+    value: {
+      name: "anything-but",
+      isArrayable: true,
+    },
+  },
+  {
+    name: "numeric",
+    value: {
+      name: "numeric",
+      isArrayable: false,
+    },
+  },
+  {
+    name: "exists",
+    value: {
+      name: "exists",
+      isArrayable: false,
+    },
+  },
+  {
+    name: "null",
+    value: {
+      name: "null",
+      isArrayable: false,
+    },
+  },
+].sort((a, b) => a.name.localeCompare(b.name));
+
 
 const numericOperators = [">", "<", "=", ">=", "<=", "!=", "range"];
 
@@ -42,15 +107,15 @@ async function text(message, def) {
 
 async function getStringValue(fieldName, type) {
   const rules = JSON.parse(JSON.stringify(filterRules));
-  const rule = await prompt({
+  const rule = (await prompt({
     name: "id",
     type: "list",
     message: `Enter rule for ${fieldName} matching`,
     choices: [...rules],
-  });
+  })).id;
 
   let val = undefined;
-  if (rule.id !== "exists" && rule.id !== "numeric") {
+  if (rule.isArrayable) {
     const value = await prompt({
       name: "id",
       type: "input",
@@ -59,9 +124,9 @@ async function getStringValue(fieldName, type) {
     val = value.id.includes(",")
       ? value.id.split(",").map((p) => p.trim())
       : value.id;
-  } else if (rule.id === "exists") {
+  } else if (rule.name === "exists") {
     val = true;
-  } else if (rule.id === "numeric") {
+  } else if (rule.name === "numeric") {
     const operator = await prompt({
       name: "id",
       type: "list",
@@ -89,13 +154,21 @@ async function getStringValue(fieldName, type) {
 
       val = [operator.id, parseFloat(value.id)];
     }
+  } else {
+    const value = await prompt({
+      name: "id",
+      type: "input",
+      message: `Enter value for ${fieldName}`,
+    });
+
+    val = value.id;
   }
   let returnObj = {};
 
-  let ruleObj = rule.id === "equals" ? val : undefined;
+  let ruleObj = rule.name === "equals" ? val : undefined;
   if (!ruleObj) {
     ruleObj = {};
-    ruleObj[rule.id] = val;
+    ruleObj[rule.name] = val;
   }
   if (!Array.isArray(ruleObj)) {
     returnObj[fieldName] = [];
@@ -116,10 +189,9 @@ async function getProperty(currentObject, objectArray) {
   const property = await inquirer.prompt({
     name: "id",
     type: "autocomplete",
-    message: `Add ${
-      objectArray[objectArray.length - 1] ||
+    message: `Add ${objectArray[objectArray.length - 1] ||
       currentObject["x-amazon-events-detail-type"]
-    } item`,
+      } item`,
     choices: choices,
     source: sourceAutocomplete(choices),
   });
@@ -177,8 +249,9 @@ function sourceAutocomplete(sources) {
   };
 }
 
-async function getRegistry(schemas) {
-  const registriesResponse = await schemas.listRegistries().promise();
+async function getRegistry() {
+  const schemas = new SchemasClient();
+  const registriesResponse = await schemas.send(new ListRegistriesCommand({}));
   const registries = [
     ...new Set(registriesResponse.Registries.map((p) => p.RegistryName)),
   ];
@@ -213,8 +286,9 @@ async function multiSelectFrom(list, message, skipBack) {
   return answer.id;
 }
 
-async function getEventBusName(eventbridge) {
-  const eventBusesResponse = await eventbridge.listEventBuses().promise();
+async function getEventBusName() {
+  const eventbridge = new EventBridgeClient();
+  const eventBusesResponse = await eventbridge.send(new ListEventBusesCommand({}));
   let eventBuses = [
     ...new Set(eventBusesResponse.EventBuses.map((p) => p.Name)),
   ];
@@ -250,6 +324,21 @@ async function getDate(message) {
   return answer;
 }
 
+async function tree(message, items) {
+  let answer;
+  do {
+    answer = await inquirer
+      .prompt(
+        {
+          type: 'tree',
+          name: "state",
+          message: message,
+          tree: items,
+        });
+  } while (!answer.state.action);
+  return answer.state;
+}
+
 module.exports = {
   getEventBusName,
   getRegistry,
@@ -261,6 +350,7 @@ module.exports = {
   getPropertyValue,
   text,
   getDate,
+  tree,
   BACK,
   DONE,
   UNDO,

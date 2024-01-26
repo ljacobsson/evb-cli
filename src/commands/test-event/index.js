@@ -20,9 +20,10 @@ program
     "default"
   )
   .option("-a, --all", "Show all rules, even unmatched ones", false)
+  .option("-r, --region", "AWS region to target")
   .description("Tests an event payload against existing rules on a bus")
   .action(async (cmd) => {
-    authHelper.initAuth(cmd);
+    await authHelper.initAuth(cmd);
     await eventTester.testEvent(
       cmd.eventInputFile,
       cmd.namePrefix,

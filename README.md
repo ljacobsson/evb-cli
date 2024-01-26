@@ -17,6 +17,15 @@ For AWS events, such as `aws.codepipeline` it's already enabled, but for custom 
 
 ![Demo](https://github.com/mhlabs/evb-cli/raw/master/images/demo.gif)
 
+### Generate EventBridge Pipes connections
+[EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/) was one of the more exciting serverless announcements at re:Invent 2022. It lets you create a one-to-one mapping between a source and a target service so you can build event driven applications with less Lambda glue functions.
+
+`evb pipes` helps you create pipes between resources in your CloudFormation/SAM template. Although the [AWS::Pipes::Pipe](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-pipes-pipe.html) resource is easy to compose, the IAM role that goes with it isn't that straight forward. 
+
+Use the `--guided` flag to get prompted for all optional parameters.
+
+![Demo](https://github.com/mhlabs/evb-cli/raw/master/images/demo-pipes.gif)
+
 ### To generate an EventBridge InputTransformer object:
 [Input transformers](https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-input-transformer-tutorial.html) are useful when you only want a small portion of the event sent to your target. This command helps you navigate the JSON payload and generate the [InputTransformer CloudFormation object](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-events-rule-inputtransformer.html)
 
@@ -88,6 +97,32 @@ If `--template` is provided, the tool will parse your template and generate code
 If no template is passed to the command, then you will get prompted to select a schema from the registry.
 
 This is using quicktype. See their docs for [target languages](https://github.com/quicktype/quicktype#target-languages)
+
+## Find usages in event rule patterns
+```
+Usage: evb find-usages|f [options]
+
+Searches all rules on a bus for matching event patterns.
+
+I.e to find all rules that match on an s3:PutObject event from CloudTrail, use:
+evb find-usages -f $.source=aws.s3,$.detail-type=.+CloudTrail,$.detail.eventName=PutObject
+
+Options:
+  -b, --eventbus [eventbus]  Name of the event bus to search. (default: "default")
+  -f, --filters [filters]    Comma separated list of '$.path.to.property=regex-pattern' to filter the event patterns with
+  -p, --profile [profile]    AWS profile to use
+  --region [region]          The AWS region to use. Falls back on AWS_REGION environment variable if not specified
+  -h, --help                 output usage information
+```
+
+This command allows you to find usages of specific fields across all event rules on a bus. This could be useful in order to find individual consumers of a specific field in your event payload.
+
+Some examples:
+
+* Find all rules that match on a specific `source` and `detail-type` combination on a custom bus: `evb find-usages --filters $.source=my-custom-source,$.detail-type=my-custom-detail-type` --eventbus custombus
+* Find all rules that trigger on any of AWS CodePipeline, CodeBuild, CodeDeploy, etc events: `evb find-usages --filters $.source=aws\.code.*`
+* Find all rules that trigger on a Lambda failure destination: `evb find-usages --filters $.detail-type='Lambda Function Invocation Result - Failure'`
+
 
 ## Generate API Destinations resources
 ```

@@ -2,7 +2,6 @@
 process.env.AWS_SDK_LOAD_CONFIG = 1;
 const program = require("commander");
 const package = require("./package.json");
-require("@mhlabs/aws-sdk-sso");
 require("./src/commands/pattern");
 require("./src/commands/input");
 require("./src/commands/browse");
@@ -14,6 +13,8 @@ require("./src/commands/replay-dead-letter");
 require("./src/commands/local");
 require("./src/commands/code-binding");
 require("./src/commands/api-destination");
+require("./src/commands/pipes");
+require("./src/commands/find-usages");
 
 program.version(package.version, "-v, --vers", "output the current version");
 

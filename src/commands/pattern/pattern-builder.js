@@ -1,8 +1,8 @@
 const schemaBrowser = require("../shared/schema-browser");
 const inputUtil = require("../shared/input-util");
 
-async function buildPattern(format, schemas) {
-  const { sourceName, schema } = await schemaBrowser.getSchema(schemas);
+async function buildPattern(format) {
+  const { sourceName, schema } = await schemaBrowser.getSchema();
 
   let pattern = init(
     sourceName,

@@ -1,20 +1,21 @@
-const AWS = require("aws-sdk");
+const { LambdaClient, GetFunctionCommand, ListFunctionEventInvokeConfigsCommand, ListFunctionsCommand } = require("@aws-sdk/client-lambda");
+const { EventBridgeClient, PutRuleCommand, PutTargetsCommand } = require("@aws-sdk/client-eventbridge");
+const { IAMClient, PutRolePolicyCommand } = require("@aws-sdk/client-iam");
 const inputUtil = require("../shared/input-util");
 const archiveUtil = require("./replay-util");
 const { Spinner } = require("cli-spinner");
+const { AddPermissionCommand } = require("@aws-sdk/client-sns");
 const spinner = new Spinner();
 
 async function replayLambda(cmd) {
-  const lambda = new AWS.Lambda();
-  const iam = new AWS.IAM();
-  const eventBridge = new AWS.EventBridge();
+  const lambda = new LambdaClient();
+  const iam = new IAMClient();
+  const eventBridge = new EventBridgeClient();
 
   const destinations = [];
   let explicitFunc;
   if (cmd.functionName) {
-    const lambdaResponse = await lambda
-      .getFunction({ FunctionName: cmd.functionName })
-      .promise();
+    const lambdaResponse = await lambda.send(new GetFunctionCommand({ FunctionName: cmd.functionName }));
     explicitFunc = [
       [{ FunctionName: lambdaResponse.Configuration.FunctionName }],
     ];
@@ -30,9 +31,7 @@ async function replayLambda(cmd) {
         !cmd.functionNamePrefix ||
         func.FunctionName.startsWith(cmd.functionNamePrefix)
       ) {
-        const config = await lambda
-          .listFunctionEventInvokeConfigs({ FunctionName: func.FunctionName })
-          .promise();
+        const config = await lambda.send(new ListFunctionEventInvokeConfigsCommand({ FunctionName: func.FunctionName }));
         if (
           config.FunctionEventInvokeConfigs &&
           config.FunctionEventInvokeConfigs.length &&
@@ -78,8 +77,7 @@ async function replayLambda(cmd) {
   const busName = invokeConfig.DestinationConfig.OnFailure.Destination.split(
     "/"
   ).slice(-1)[0];
-  const rule = await eventBridge
-    .putRule({
+  const rule = await eventBridge.send( new PutRuleCommand({
       Name: cmd.replayName,
       EventBusName: busName,
       EventPattern: JSON.stringify({
@@ -87,11 +85,9 @@ async function replayLambda(cmd) {
         resources: [invokeConfig.FunctionArn],
         source: [cmd.replayName],
       }),
-    })
-    .promise();
+    }));
 
-  await eventBridge
-    .putTargets({
+  await eventBridge.send( new PutTargetsCommand({
       Targets: [
         {
           Arn: invokeConfig.FunctionArn.replace(":$LATEST", ""),
@@ -101,48 +97,43 @@ async function replayLambda(cmd) {
       ],
       Rule: rule.RuleArn.split("/").slice(-1)[0],
       EventBusName: busName,
-    })
-    .promise();
+    }));
 
-  const functionResponse = await lambda
-    .getFunction({ FunctionName: functionName })
-    .promise();
+  const functionResponse = await lambda.send(new GetFunctionCommand({ FunctionName: functionName }));
 
   const policyName = `evb-cli-replaypolicy-${new Date().getTime()}`;
   const roleName = functionResponse.Configuration.Role.split("/").slice(-1)[0];
-  const policyResponse = await iam
-    .putRolePolicy({
-      RoleName: roleName,
-      PolicyName: policyName,
-      PolicyDocument: JSON.stringify({
-        Version: "2012-10-17",
-        Id: `evb-cli-generated`,
-        Statement: [
-          {
-            Sid: "evbclisid",
-            Effect: "Allow",
-            Action: "lambda:InvokeFunction",
-            Resource: functionResponse.Configuration.FunctionArn,
-            Condition: {
-              ArnLike: {
-                "AWS:SourceArn": rule.RuleArn,
-              },
+  const policyResponse = await iam.send(new PutRolePolicyCommand({
+    RoleName: roleName,
+    PolicyName: policyName,
+    PolicyDocument: JSON.stringify({
+      Version: "2012-10-17",
+      Id: `evb-cli-generated`,
+      Statement: [
+        {
+          Sid: "evbclisid",
+          Effect: "Allow",
+          Action: "lambda:InvokeFunction",
+          Resource: functionResponse.Configuration.FunctionArn,
+          Condition: {
+            ArnLike: {
+              "AWS:SourceArn": rule.RuleArn,
             },
           },
-        ],
-      }),
-    })
-    .promise();
+        },
+      ],
+    }),
+  }));
+
   const statementId = `evb-cli-sid-${new Date().getTime()}`;
-  await lambda
-    .addPermission({
-      FunctionName: functionName,
-      StatementId: statementId,
-      Action: "lambda:InvokeFunction",
-      Principal: "events.amazonaws.com",
-      SourceArn: rule.RuleArn,
-    })
-    .promise();
+  await lambda.send(new AddPermissionCommand({
+    FunctionName: functionName,
+    StatementId: statementId,
+    Action: "lambda:InvokeFunction",
+    Principal: "events.amazonaws.com",
+    SourceArn: rule.RuleArn,
+  }));
+
   cmd.policies = [{ roleName, policyName }];
   cmd.permissions = [{ functionName, statementId }];
   await archiveUtil.replay(
@@ -160,12 +151,10 @@ async function replayLambda(cmd) {
 async function* ListFunctions(lambda, params) {
   let token;
   do {
-    const response = await lambda
-      .listFunctions({
-        ...params,
-        Marker: token,
-      })
-      .promise();
+    const response = await lambda.send(new ListFunctionsCommand({
+      ...params,
+      Marker: token,
+    }));
 
     yield response.Functions;
 

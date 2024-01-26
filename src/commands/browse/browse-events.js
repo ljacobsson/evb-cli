@@ -1,7 +1,12 @@
 const patternBuilder = require("../shared/schema-browser");
 const inputUtil = require("../shared/input-util");
 const eventBridgeUtil = require("../shared/eventbridge-util");
-async function browseEvents(format, schemas, eventbridge) {
+const { SchemasClient } = require("@aws-sdk/client-schemas");
+const { EventBridgeClient, ListTargetsByRuleCommand } = require("@aws-sdk/client-eventbridge");
+const { fromSSO } = require('@aws-sdk/credential-provider-sso');
+
+async function browseEvents(cmd) {
+  const schemas = new SchemasClient();
   while (true) {
     const { targets } = await getTargets(schemas);
     if (targets.length) {
@@ -37,13 +42,12 @@ async function browseEvents(format, schemas, eventbridge) {
   }
 }
 
-async function getTargets(schemas) {
-  const { schema, sourceName } = await patternBuilder.getSchema(schemas);
-  const AWS = require("aws-sdk");
-  const evb = new AWS.EventBridge();
-  const eventBusName = await inputUtil.getEventBusName(evb);
+async function getTargets() {
+  const { schema, sourceName } = await patternBuilder.getSchema();
+  const evb = new EventBridgeClient();
+  const eventBusName = await inputUtil.getEventBusName();
   const targets = [];
-  for await (const ruleBatch of eventBridgeUtil.listRules(evb, {
+  for await (const ruleBatch of eventBridgeUtil.listRules({
     EventBusName: eventBusName,
     Limit: 100,
   })) {
@@ -56,14 +60,9 @@ async function getTargets(schemas) {
       if (
         pattern.source == sourceName &&
         pattern["detail-type"] ==
-          schema.components.schemas.AWSEvent["x-amazon-events-detail-type"]
+        schema.components.schemas.AWSEvent["x-amazon-events-detail-type"]
       ) {
-        const targetResponse = await evb
-          .listTargetsByRule({
-            Rule: rule.Name,
-            EventBusName: eventBusName,
-          })
-          .promise();
+        const targetResponse = await evb.send(new ListTargetsByRuleCommand({ Rule: rule.Name, EventBusName: eventBusName }));
         for (const target of targetResponse.Targets) {
           const arnSplit = target.Arn.split(":");
           const service = arnSplit[2];

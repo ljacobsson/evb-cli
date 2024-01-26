@@ -1,6 +1,5 @@
 const fs = require("fs");
 const YAML = require("./yaml-wrapper");
-const AWS = require("aws-sdk");
 const inputUtil = require("./input-util");
 const inquirer = require("inquirer");
 
@@ -22,7 +21,7 @@ function load(filePath, muteError) {
       format = "yaml";
       return template;
     } catch (err) {
-      console.log(err.message);
+      console.log("Can't find or parse " + templateFile.toString());
     }
   } catch (err) {
     if (!muteError) {
@@ -53,6 +52,12 @@ function getEventRules() {
     .sort();
 }
 
+function getStateMachines() {
+  return Object.keys(template.Resources)
+    .filter((p) => template.Resources[p].Type === "AWS::Serverless::StateMachine")
+    .sort();
+}
+
 async function injectPattern(pattern) {
   if (!template) {
     return;
@@ -61,7 +66,7 @@ async function injectPattern(pattern) {
     "Output to stdout",
     new inquirer.Separator("Compatible resources:"),
   ];
-  const resources = [...getLambdaFunctions(), ...getEventRules()];
+  const resources = [...getLambdaFunctions(), ...getEventRules(), ...getStateMachines()];
   for (const key of resources) {
     choices.push({
       name: key,
@@ -78,9 +83,9 @@ async function injectPattern(pattern) {
     );
     return;
   }
-  if (resource.value.Type === "AWS::Serverless::Function") {
+  if (["AWS::Serverless::Function", "AWS::Serverless::StateMachine"].includes(resource.value.Type)) {
     const eventName = await inputUtil.text("Event name", "MyEvent");
-    const eventBus = await inputUtil.getEventBusName(new AWS.EventBridge());
+    const eventBus = await inputUtil.getEventBusName();
     if (!resource.value.Properties.Events) {
       resource.value.Properties.Events = {};
     }
@@ -100,7 +105,7 @@ async function injectPattern(pattern) {
     );
   }
   if (resource.value.Type === "AWS::Events::Rule") {
-    const eventBus = await inputUtil.getEventBusName(new AWS.EventBridge());
+    const eventBus = await inputUtil.getEventBusName();
     if (!resource.value.Properties) {
       resource.value.Properties = {};
     }

@@ -1,36 +1,34 @@
-const AWS = require("aws-sdk");
-const inputUtil = require("../shared/input-util");
+const { EventBridgeClient, StartReplayCommand, DescribeRuleCommand } = require("@aws-sdk/client-eventbridge");
+const { SFNClient } = require("@aws-sdk/client-sfn");
 const archiveUtil = require("../shared/archive-util");
 
 let eventBridge, sts;
 
 async function replay(cmd) {
-  eventBridge = new AWS.EventBridge();
-  const stepFunctions = new AWS.StepFunctions();
+  eventBridge = new EventBridgeClient();
+  const stepFunctions = new SFNClient();
   const ruleConfig = await getReplayConfig(cmd);
   if (cmd.cleanUp || cmd.replaySpeed > 0) {
     await setupPacedReplay(cmd, ruleConfig, stepFunctions);
   }
   if (ruleConfig) {
-    await eventBridge.startReplay(ruleConfig).promise();
+    await eventBridge.send(new StartReplayCommand(ruleConfig));
     console.log(
-      `Replay started. Follow the progress here: https://${AWS.config.region}.console.aws.amazon.com/events/home?region=${AWS.config.region}#/replay/${ruleConfig.ReplayName}`
+      `Replay started. Follow the progress here: https://${process.env.AWS_REGION}.console.aws.amazon.com/events/home?region=${AWS.config.region}#/replay/${ruleConfig.ReplayName}`
     );
   }
 }
 
 async function setupPacedReplay(cmd, ruleConfig, stepFunctions) {
-  const busArn = `arn:aws:events:${AWS.config.region}:${caller.Account}:event-bus/${cmd.eventbus}`;
+  const busArn = `arn:aws:events:${process.env.AWS_REGION}:${caller.Account}:event-bus/${cmd.eventbus}`;
   ruleConfig.Destination.Arn = busArn;
   const filterArns = [];
   cmd.rules = [];
 
-  const dispatchRule = await eventBridge
-    .describeRule({
+  const dispatchRule = await eventBridge.send(new DescribeRuleCommand({
       Name: cmd.ruleArn.split("/").slice(-1)[0],
       EventBusName: cmd.eventbus,
-    })
-    .promise();
+    }));
   cmd.rules.push(dispatchRule.Name);
   cmd.sourceOverride = ["lambda"];
   cmd.dispatchSourceOverride = cmd.replayName;
@@ -42,9 +40,8 @@ async function setupPacedReplay(cmd, ruleConfig, stepFunctions) {
   );
 }
 
-async function getReplayConfig(cmd, showRuleSelector) {
-  eventBridge = eventBridge || new AWS.EventBridge();
-  sts = sts || new AWS.STS();
+async function getReplayConfig(cmd) {
+  eventBridge = eventBridge || new EventBridgeClient();
 
   const archive = await archiveUtil.selectArchive(
     cmd.archiveBus || cmd.eventbus
@@ -60,7 +57,7 @@ async function getReplayConfig(cmd, showRuleSelector) {
       Arn: archive.EventSourceArn,
       FilterArns: filteredRules.map((p) => p.Arn),
     },
-    EventSourceArn: `arn:aws:events:${AWS.config.region}:${caller.Account}:archive/${archive.ArchiveName}`,
+    EventSourceArn: `arn:aws:events:${process.env.AWS_REGION}:${caller.Account}:archive/${archive.ArchiveName}`,
     ReplayName: cmd.replayName || `evb-local-${new Date().getTime()}`,
     EventStartTime: new Date(startDate),
     EventEndTime: new Date(endDate),

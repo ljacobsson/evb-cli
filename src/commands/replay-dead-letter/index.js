@@ -23,6 +23,6 @@ program
   )
   .description("Starts a replay of events against a specific destination")
   .action(async (cmd) => {
-    authHelper.initAuth(cmd);
+    await authHelper.initAuth(cmd);
     await replaylambda.replayLambda(cmd);
   });

@@ -50,7 +50,9 @@ function createTarget(eventConsumerName, target, targetLogicalId, token) {
 }
 
 function getRuleName(busName) {
-  return `evb-local-${busName}-${new Date().getTime()}`;
+  return `evb-local-${busName
+    .replace(/\//g, "-")
+    .substring(0, 30)}-${new Date().getTime()}`;
 }
 
 module.exports = {

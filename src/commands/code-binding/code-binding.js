@@ -1,8 +1,7 @@
 const schemaBrowser = require("../shared/schema-browser");
 const inputUtil = require("../shared/input-util");
 const templateParser = require("../shared/template-parser");
-const SchemasClient = require("aws-sdk/clients/schemas");
-const schemas = new SchemasClient();
+const { SchemasClient, ExportSchemaCommand } = require("@aws-sdk/client-schemas");
 const jsf = require("json-schema-faker");
 const jp = require("jsonpath");
 const toJsonSchema = require("to-json-schema");
@@ -20,20 +19,21 @@ require("./languages/python");
 require("./languages/java");
 require("./languages/swift");
 async function loadFromRegistry(cmd) {
-  const schemaLocation = await schemaBrowser.getSchemaName(schemas);
-  const schema = await schemas
-    .exportSchema({
-      RegistryName: schemaLocation.registry.id,
-      SchemaName: schemaLocation.schemaName,
-      Type: "JSONSchemaDraft4",
-    })
-    .promise();
+  const schemas = new SchemasClient();
+  const schemaLocation = await schemaBrowser.getSchemaName();
+  const schema = await schemas.send(new ExportSchemaCommand({
+    RegistryName: schemaLocation.registry.id,
+    SchemaName: schemaLocation.schemaName,
+    Type: "JSONSchemaDraft4",
+  }));
   await generateType(cmd, schema.Content);
 }
 
 async function loadFromTemplate(cmd) {
+  const schemas = new SchemasClient();
+
   if (!cmd.registryName) {
-    cmd.registryName = (await inputUtil.getRegistry(schemas)).id;
+    cmd.registryName = (await inputUtil.getRegistry()).id;
   }
   const template = templateParser.load(cmd.template);
   rules = templateParser.getEventRules().map((r) => {
@@ -66,13 +66,13 @@ async function loadFromTemplate(cmd) {
     .replace(/ /g, "");
 
   try {
-    const describeSchemaResponse = await schemas
-      .exportSchema({
+    const describeSchemaResponse = await schemas.send(new ExportSchemaCommand
+      ({
         RegistryName: cmd.registryName,
         SchemaName: schemaName,
         Type: "JSONSchemaDraft4",
-      })
-      .promise();
+      }));
+
     let schema = JSON.parse(describeSchemaResponse.Content);
     if (target.target.InputTransformer) {
       schema = generateSchemaForTransform(schema, target);

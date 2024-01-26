@@ -9,13 +9,17 @@ program
   .option("-n, --type-name [typeName]", "Type name", "MyType")
   .option("-p, --profile [profile]", "AWS profile to use")
   .option(
+    "-r, --region [region]",
+    "The AWS region to use. Falls back on AWS_REGION environment variable if not specified"
+  )
+  .option(
     "-o, --output-file [outputFile]",
     "Output file name. Writes to std out if skipped"
   )
   .option("-l, --language [language]", "Output language")
   .description("Generates code bindings from an InputTransformer template")
   .action(async (cmd) => {
-    authHelper.initAuth(cmd);
+    await authHelper.initAuth(cmd);
 
     if (!cmd.language) {
       cmd.language = await codeBinding.getLanguageInput();
