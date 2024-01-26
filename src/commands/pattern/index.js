@@ -2,7 +2,6 @@ const program = require("commander");
 const templateParser = require("../shared/template-parser");
 const patternBuilder = require("./pattern-builder");
 const authHelper = require("../shared/auth-helper");
-const AWS = require("aws-sdk");
 program
   .command("pattern")
   .alias("p")
@@ -15,9 +14,8 @@ program
   )
   .description("Starts an EventBridge pattern builder")
   .action(async (cmd) => {
-    authHelper.initAuth(cmd);
+    await authHelper.initAuth(cmd);
     templateParser.load(cmd.template);
-    const schemaApi = new AWS.Schemas();
-    const pattern = await patternBuilder.buildPattern(cmd.format, schemaApi);
+    const pattern = await patternBuilder.buildPattern(cmd.format);
     await templateParser.injectPattern(pattern);
   });

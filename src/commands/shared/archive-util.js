@@ -1,23 +1,17 @@
-const AWS = require("aws-sdk");
+const { STSClient, GetCallerIdentityCommand } = require("@aws-sdk/client-sts");
+const { EventBridgeClient, ListArchivesCommand, DescribeRuleCommand, StartReplayCommand, ListTargetsByRuleCommand, PutRuleCommand, PutTargetsCommand,  } = require("@aws-sdk/client-eventbridge");
+const { SFNClient } = require("@aws-sdk/client-sfn");
 const inputUtil = require("./input-util");
-const arnListener = require("../local/listeners/arnListener");
-const fs = require("fs");
-const tempDir = require("temp-dir");
-const path = require("path");
-const { split } = require("temp-dir");
 
-let eventBridge, sts;
 
 async function selectArchive(eventbus) {
-  sts = sts || new AWS.STS();
-  eventBridge = eventBridge || new AWS.EventBridge();
-  caller = await sts.getCallerIdentity().promise();
-  const busArn = `arn:aws:events:${AWS.config.region}:${caller.Account}:event-bus/${eventbus}`;
-  const archives = await eventBridge
-    .listArchives({
-      EventSourceArn: busArn,
-    })
-    .promise();
+  const sts = new STSClient();
+  const eventBridge = new EventBridgeClient();
+  caller = await sts.send(new GetCallerIdentityCommand({}));
+  const busArn = `arn:aws:events:${process.env.AWS_REGION}:${caller.Account}:event-bus/${eventbus}`;
+  const archives = await eventBridge.send(new ListArchivesCommand({
+    EventSourceArn: busArn,
+  }));
   if (!archives.Archives.length) {
     console.log(`No archives found for eventbus ${eventbus}`);
     return;
@@ -33,41 +27,40 @@ async function selectArchive(eventbus) {
 }
 
 async function replay(cmd) {
-  eventBridge = new AWS.EventBridge();
-  const stepFunctions = new AWS.StepFunctions();
+  const eventBridge = new EventBridgeClient();
   const ruleConfig = await getReplayConfig(cmd, true);
   if (cmd.replaySpeed > 0) {
-    await setupReplay(cmd, ruleConfig, stepFunctions);
+    await setupReplay(cmd, ruleConfig);
   }
   if (ruleConfig) {
-    const resp = await eventBridge.startReplay(ruleConfig).promise();
+    const resp = await eventBridge.send(new StartReplayCommand(ruleConfig));
     console.log(
-      `Replay started. Follow the progress here: https://${AWS.config.region}.console.aws.amazon.com/events/home?region=${AWS.config.region}#/replay/${ruleConfig.ReplayName}`
+      `Replay started. Follow the progress here: https://${process.env.AWS_REGION}.console.aws.amazon.com/events/home?region=${process.env.AWS_REGION}#/replay/${ruleConfig.ReplayName}`
     );
   }
 }
 
-async function setupReplay(cmd, ruleConfig, stepFunctions) {
+async function setupReplay(cmd, ruleConfig) {
   const filterArns = [];
   cmd.rules = [];
   cmd.policies = [];
   cmd.permissions = [];
-  await createAndExecute(cmd, ruleConfig, stepFunctions, filterArns);
+  await createAndExecute(cmd, ruleConfig, filterArns);
 }
 
 async function createAndExecute(
   cmd,
   ruleConfig,
-  stepFunctions,
   filterArns
 ) {
+  const stepFunctions = new SFNClient();
+  const eventBridge = new EventBridgeClient();
+
   for (const filterArn of ruleConfig.Destination.FilterArns) {
-    let rule = await eventBridge
-      .describeRule({
-        Name: filterArn.split("/").slice(-1)[0],
-        EventBusName: cmd.eventbus,
-      })
-      .promise();
+    let rule = await eventBridge.send(new DescribeRuleCommand({
+      Name: filterArn.split("/").slice(-1)[0],
+      EventBusName: cmd.eventbus,
+    }));
     delete rule.CreatedBy;
     const name = `evb-cli-${rule.Name.substring(
       0,
@@ -80,12 +73,12 @@ async function createAndExecute(
     sfRule.EventPattern = JSON.stringify(pattern);
     const dispatchSource = cmd.dispatchSourceOverride || pattern.source; //OBS
 
-    const targets = await eventBridge
-      .listTargetsByRule({
-        EventBusName: cmd.eventbus,
-        Rule: sfRule.Name.split("/").slice(-1)[0],
-      })
-      .promise();
+    const targets = await eventBridge.send(new ListTargetsByRuleCommand({
+
+      EventBusName: cmd.eventbus,
+      Rule: sfRule.Name.split("/").slice(-1)[0],
+    }));
+
     for (const target of targets.Targets) {
       const sfTarget = Object.assign({}, target);
       delete sfTarget.Input;
@@ -102,41 +95,38 @@ async function createAndExecute(
         }, "DispatchSource": "${cmd.dispatchSourceOverride
         }", "EventBusName": "${cmd.eventbus}", "ReplayName": "${cmd.replayName
         }"}`;
-      sfTarget.Arn = `arn:aws:states:${AWS.config.region}:${accountId}:stateMachine:evb-cli-paced-replays`;
+      sfTarget.Arn = `arn:aws:states:${process.env.AWS_REGION}:${accountId}:stateMachine:evb-cli-paced-replays`;
       sfRule.Name = `${name}-sf`;
       delete sfRule.Arn;
-      sfRule.RoleArn = `arn:aws:iam::${accountId}:role/evb-cli-eventbridge-to-stepfunctions-${AWS.config.region}`;
-      const evbSFRuleResponse = await eventBridge.putRule(sfRule).promise();
+      sfRule.RoleArn = `arn:aws:iam::${accountId}:role/evb-cli-eventbridge-to-stepfunctions-${process.env.AWS_REGION}`;
+      const evbSFRuleResponse = await eventBridge.send(new PutRuleCommand(sfRule));
 
-      sfTarget.RoleArn = `arn:aws:iam::${accountId}:role/evb-cli-eventbridge-to-stepfunctions-${AWS.config.region}`;
+      sfTarget.RoleArn = `arn:aws:iam::${accountId}:role/evb-cli-eventbridge-to-stepfunctions-${process.env.AWS_REGION}`;
 
-      await eventBridge
-        .putTargets({
-          Targets: [sfTarget],
-          Rule: evbSFRuleResponse.RuleArn.split("/").slice(-1)[0],
-          EventBusName: cmd.eventbus,
-        })
-        .promise();
+      await eventBridge.send(new PutTargetsCommand({
+        Targets: [sfTarget],
+        Rule: evbSFRuleResponse.RuleArn.split("/").slice(-1)[0],
+        EventBusName: cmd.eventbus,
+      }));
       cmd.rules.push(sfRule.Name);
 
-      await stepFunctions
-        .startExecution({
-          stateMachineArn: sfTarget.Arn,
-          input: JSON.stringify({
-            EventBusName: cmd.eventbus,
-            Action: "cleanup",
-            OriginalEvent: {
-              time: ruleConfig.EventEndTime,
-            },
-            Rules: cmd.rules,
-            Policies: cmd.policies,
-            Permissions: cmd.permissions,
-            StartTime: ruleConfig.EventStartTime,
-            ReplaySpeed: cmd.replaySpeed || 0,
-            DispatchSource: dispatchSource,
-          }),
-        })
-        .promise();
+      await stepFunctions.send(new StartExecutionCommand({
+        stateMachineArn: sfTarget.Arn,
+        input: JSON.stringify({
+          EventBusName: cmd.eventbus,
+          Action: "cleanup",
+          OriginalEvent: {
+            time: ruleConfig.EventEndTime,
+          },
+          Rules: cmd.rules,
+          Policies: cmd.policies,
+          Permissions: cmd.permissions,
+          StartTime: ruleConfig.EventStartTime,
+          ReplaySpeed: cmd.replaySpeed || 0,
+          DispatchSource: dispatchSource,
+        }),
+      }));
+
       filterArns.push(evbSFRuleResponse.RuleArn);
     }
   }
@@ -144,9 +134,9 @@ async function createAndExecute(
   ruleConfig.Destination.FilterArns = filterArns;
 }
 
-async function getReplayConfig(cmd, showRuleSelector) {
-  eventBridge = eventBridge || new AWS.EventBridge();
-  sts = sts || new AWS.STS();
+async function getReplayConfig(cmd, showRuleSelector) {  
+  const sts = new STSClient();
+  const caller = await sts.send(new GetCallerIdentityCommand({}));
 
   const archive = await selectArchive(cmd.eventbus);
   if (!archive) {
@@ -162,7 +152,7 @@ async function getReplayConfig(cmd, showRuleSelector) {
       Arn: archive.EventSourceArn,
       FilterArns: filteredRules.map((p) => p.Arn),
     },
-    EventSourceArn: `arn:aws:events:${AWS.config.region}:${caller.Account}:archive/${archive.ArchiveName}`,
+    EventSourceArn: `arn:aws:events:${process.env.AWS_REGION}:${caller.Account}:archive/${archive.ArchiveName}`,
     ReplayName: cmd.replayName || `evb-local-${new Date().getTime()}`,
     EventStartTime: new Date(startDate),
     EventEndTime: new Date(endDate),

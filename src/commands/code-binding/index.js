@@ -19,7 +19,7 @@ program
   .option("-l, --language [language]", "Output language")
   .description("Generates code bindings from an InputTransformer template")
   .action(async (cmd) => {
-    authHelper.initAuth(cmd);
+    await authHelper.initAuth(cmd);
 
     if (!cmd.language) {
       cmd.language = await codeBinding.getLanguageInput();

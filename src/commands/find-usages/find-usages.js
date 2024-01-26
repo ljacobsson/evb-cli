@@ -1,5 +1,5 @@
 const jp = require("jsonpath");
-const AWS = require("aws-sdk");
+const { EventBridgeClient, ListRulesCommand, ListTargetsByRuleCommand } = require("@aws-sdk/client-eventbridge");
 const inputUtil = require("../shared/input-util");
 const yaml = require("js-yaml");
 const Spinner = require("cli-spinner").Spinner;
@@ -10,20 +10,20 @@ async function find(cmd) {
     console.log("Please specify at least one filter with -f. See --help for more info");
     return;
   }
-  const evb = new AWS.EventBridge();
+  const evb = new EventBridgeClient();
   const filters = cmd.filters.split(",").map((p) => p.trim()).filter((p) => p && p.length > 0);
   let nextToken = null;
   const allRules = [];
   const spinner = new Spinner();
   spinner.setSpinnerString("⠁⠁⠉⠙⠚⠒⠂⠂⠒⠲⠴⠤⠄⠄⠤⠠⠠⠤⠦⠖⠒⠐⠐⠒⠓⠋⠉⠈⠈");
   spinner.start();
-  
+
   do {
-    const rules = await evb.listRules({
+    const rules = await evb.send( new ListRulesCommand({
       EventBusName: cmd.eventbus,
       NextToken: nextToken,
-    }).promise();
-       
+    }));
+
     allRules.push(...rules.Rules);
     nextToken = rules.NextToken;
   } while (nextToken);
@@ -37,13 +37,13 @@ async function find(cmd) {
           path = path.split(".").map(p => p.includes("-") ? `["${p}"]` : p).join("");
         }
         return jp.query(pattern, path).length > 0 && jp.query(pattern, path).find(p => {
-          const str = JSON.stringify(p);          
+          const str = JSON.stringify(p);
           let isMatch = false;
           isMatch = str.match(new RegExp(value, "g"))?.length > 0;
 
           if (Array.isArray(p)) {
             for (const item of p) {
-              isMatch = isMatch || typeof(item) === "string" && item.match(new RegExp(value, "g"))?.length > 0;
+              isMatch = isMatch || typeof (item) === "string" && item.match(new RegExp(value, "g"))?.length > 0;
             }
           }
           return isMatch > 0;
@@ -74,12 +74,10 @@ async function find(cmd) {
 }
 async function getTargets(evb, rule, eventBusName) {
   const targets = [];
-  const targetResponse = await evb
-    .listTargetsByRule({
+  const targetResponse = await evb.send(new ListTargetsByRuleCommand({
       Rule: rule.Name,
       EventBusName: eventBusName,
-    })
-    .promise();
+    }));
   for (const target of targetResponse.Targets) {
     const arnSplit = target.Arn.split(":");
     const service = arnSplit[2];

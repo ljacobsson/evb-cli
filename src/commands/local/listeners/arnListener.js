@@ -1,6 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
 const websocket = require('./websocket');
-let output = console;
 
 async function initArnListener(arn, target, compact, sam, replaySettings, func) {
   const token = uuidv4();
